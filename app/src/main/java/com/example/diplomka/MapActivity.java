@@ -72,9 +72,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             }
             lastDatetimeMillis = dataPoint.dt;
             mMap.addMarker(new MarkerOptions().position(lastPosition).title(new Date(dataPoint.dt).toString()));
-
         }
+        // Místo mouhého spojování bodů lze nakreslit cestu https://abhiandroid.com/programming/googlemaps
+
         mMap.moveCamera(CameraUpdateFactory.newLatLng(lastPosition));
+        mMap.animateCamera(CameraUpdateFactory.zoomTo( 15.0f ));
         // Set listeners for click events.
         googleMap.setOnPolylineClickListener(this);
     }
@@ -82,5 +84,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     @Override
     public void onPolylineClick(@NonNull Polyline polyline) {
         Toast.makeText(this, "Kliknuto na čáru", Toast.LENGTH_LONG).show();
+
     }
 }

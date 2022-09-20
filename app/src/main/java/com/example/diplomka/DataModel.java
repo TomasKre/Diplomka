@@ -77,7 +77,7 @@ public class DataModel extends SQLiteOpenHelper {
 
         if (cursor.moveToFirst()) {
             do {
-                dataArrayList.add(new DataPoint(cursor.getInt(0), cursor.getInt(1),
+                dataArrayList.add(new DataPoint(cursor.getInt(0), cursor.getLong(1),
                         cursor.getFloat(2), cursor.getFloat(3), cursor.getFloat(4)));
             } while (cursor.moveToNext());
         }

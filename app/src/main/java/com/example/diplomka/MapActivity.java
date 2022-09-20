@@ -35,7 +35,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         setContentView(binding.getRoot());
 
         Context ctx = getApplicationContext();
-        dm = new DataModel(ctx); //TODO: otestovat
+        dm = new DataModel(ctx);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -59,11 +59,12 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         ArrayList<DataPoint> data = dm.getData();
 
         LatLng lastPosition = null;
-        Integer lastDatetimeMillis = 0;
+        Long lastDatetimeMillis = (long)0;
         PolylineOptions polylineOptions = new PolylineOptions().clickable(true);
         for (DataPoint dataPoint : data) {
             lastPosition = new LatLng(dataPoint.lat, dataPoint.lon);
-            if (dataPoint.dt - lastDatetimeMillis < 600000) {
+            // max 3 minuty mezi záznamy (300000 ms)
+            if (dataPoint.dt - lastDatetimeMillis < 300000) {
                 polylineOptions.add(lastPosition);
             } else {
                 Polyline polyline = googleMap.addPolyline(polylineOptions);

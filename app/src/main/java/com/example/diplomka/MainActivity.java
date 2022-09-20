@@ -1,7 +1,5 @@
 package com.example.diplomka;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -13,18 +11,14 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.ScrollView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Timer;
-import java.util.TimerTask;
+import android.content.Intent;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -266,10 +260,17 @@ public class MainActivity extends AppCompatActivity {
         dataWindow.setAdapter(adapter);
 
         dataWindow.setOnItemClickListener((adapterView, view, position, l) -> {
-            // TODO Auto-generated method stub
-            String value=adapter.getItem(position);
-            Toast.makeText(getApplicationContext(), value, Toast.LENGTH_SHORT).show();
-
+            String value = adapter.getItem(position);
+            openMapIntent(value);
         });
     }
+
+    public void openMapIntent(String msg) {
+        Intent intent = new Intent(this, MapActivity.class);
+        //intent.putExtra(ID, String.valueOf(id));
+        intent.putExtra("item", msg);
+        startActivity(intent);
+    }
+
+    //TODO: Data přidat ID k ukládání session
 }

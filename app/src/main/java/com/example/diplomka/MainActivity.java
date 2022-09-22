@@ -6,6 +6,7 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -18,6 +19,9 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 import android.content.Intent;
 
 public class MainActivity extends AppCompatActivity {
@@ -25,12 +29,19 @@ public class MainActivity extends AppCompatActivity {
     private LocationManager locationManager;
     private LocationListener locationListener;
 
+    public int session;
     private DataModel dm;
 
     ListView dataWindow;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("session_prefs", 0);
+        session = sharedPreferences.getInt("session", 0);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt("session", ++session);
+        editor.apply();
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -142,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void requestMicrophonePermissions() {
+    protected void requestMicrophonePermissions() {
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.RECORD_AUDIO)
                 != PackageManager.PERMISSION_GRANTED) {

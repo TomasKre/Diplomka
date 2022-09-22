@@ -63,7 +63,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         PolylineOptions polylineOptions = new PolylineOptions().clickable(true);
         for (DataPoint dataPoint : data) {
             lastPosition = new LatLng(dataPoint.lat, dataPoint.lon);
-            // max 3 minuty mezi záznamy (300000 ms)
+            // max 5 minut mezi záznamy (300000 ms)
             if (dataPoint.dt - lastDatetimeMillis < 300000) {
                 polylineOptions.add(lastPosition);
             } else {

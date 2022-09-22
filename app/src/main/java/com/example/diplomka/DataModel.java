@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -18,6 +19,7 @@ public class DataModel extends SQLiteOpenHelper {
     public static final String TBL_NAME = "tbStreeData";
 
     public static final String ATR_ID = "id";
+    public static final String ATR_SESSION = "session";
     public static final String ATR_TS = "dt";
     public static final String ATR_LAT = "lat";
     public static final String ATR_LON = "lon";
@@ -33,6 +35,7 @@ public class DataModel extends SQLiteOpenHelper {
 
         query = "CREATE TABLE " + TBL_NAME + " (" +
                 ATR_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                ATR_SESSION + " INTEGER, " +
                 ATR_TS + " INTEGER, " +
                 ATR_LAT + " REAL, " +
                 ATR_LON + " REAL, " +
@@ -48,9 +51,10 @@ public class DataModel extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public void addData(long ts, double lat, double lon, double noise) {
+    public void addData(long ts, int session, double lat, double lon, double noise) {
         ContentValues values = new ContentValues();
         values.put(ATR_TS, ts);
+        values.put(ATR_SESSION, session);
         values.put(ATR_LAT, lat);
         values.put(ATR_LON, lon);
         values.put(ATR_NOISE, noise);
@@ -77,8 +81,9 @@ public class DataModel extends SQLiteOpenHelper {
 
         if (cursor.moveToFirst()) {
             do {
-                dataArrayList.add(new DataPoint(cursor.getInt(0), cursor.getLong(1),
-                        cursor.getFloat(2), cursor.getFloat(3), cursor.getFloat(4)));
+                dataArrayList.add(new DataPoint(cursor.getInt(0), cursor.getInt(1),
+                        cursor.getLong(2), cursor.getFloat(3),
+                        cursor.getFloat(4), cursor.getFloat(5)));
             } while (cursor.moveToNext());
         }
 
@@ -95,13 +100,15 @@ public class DataModel extends SQLiteOpenHelper {
 
         DecimalFormat formatterGPS = new DecimalFormat("#0.000000");
         DecimalFormat formatterDB = new DecimalFormat("#0.00");
+        String pattern = "dd.MM.yyyy hh:mm:ss";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
         if (cursor.moveToFirst()) {
             do {
-                Date date = new Date(cursor.getLong(1));
-                dataArrayList.add(date + " – " +
-                        formatterGPS.format(cursor.getDouble(2)) + ", " +
-                        formatterGPS.format(cursor.getDouble(3)) + "; " +
-                        formatterDB.format(cursor.getDouble(4)) + " dB");
+                String date = simpleDateFormat.format(new Date(cursor.getLong(2)));
+                dataArrayList.add(cursor.getInt(1) + ") " + date.toString() + " – " +
+                        formatterGPS.format(cursor.getDouble(3)) + ", " +
+                        formatterGPS.format(cursor.getDouble(4)) + "; " +
+                        formatterDB.format(cursor.getDouble(5)) + " dB");
             } while (cursor.moveToNext());
         }
 
@@ -112,7 +119,14 @@ public class DataModel extends SQLiteOpenHelper {
 
     public void deleteData() {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL("DELETE FROM "+ TBL_NAME);
+        db.execSQL("DELETE FROM " + TBL_NAME);
+        db.close();
+    }
+
+    public void deleteDataById(int id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("DELETE FROM " + TBL_NAME + " WHERE " + ATR_ID +
+                 " = " + id);
         db.close();
     }
 }

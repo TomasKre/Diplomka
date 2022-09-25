@@ -76,7 +76,29 @@ public class DataModel extends SQLiteOpenHelper {
     public ArrayList<DataPoint> getData() {
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TBL_NAME, null);
+        Cursor cursor = db.rawQuery("SELECT " + ATR_ID + ", " + ATR_SESSION + ", " + ATR_TS +
+                ", " + ATR_LAT + "," + ATR_LON + ", " + ATR_NOISE + " FROM " + TBL_NAME, null);
+        ArrayList<DataPoint> dataArrayList = new ArrayList<>();
+
+        if (cursor.moveToFirst()) {
+            do {
+                dataArrayList.add(new DataPoint(cursor.getInt(0), cursor.getInt(1),
+                        cursor.getLong(2), cursor.getFloat(3),
+                        cursor.getFloat(4), cursor.getFloat(5)));
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+        return dataArrayList;
+    }
+
+    public ArrayList<DataPoint> getData(int session) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT " + ATR_ID + ", " + ATR_SESSION + ", " + ATR_TS +
+                ", " + ATR_LAT + "," + ATR_LON + ", " + ATR_NOISE + " FROM " + TBL_NAME + " WHERE " +
+                ATR_SESSION + " = " + session, null);
         ArrayList<DataPoint> dataArrayList = new ArrayList<>();
 
         if (cursor.moveToFirst()) {
@@ -109,6 +131,30 @@ public class DataModel extends SQLiteOpenHelper {
                         formatterGPS.format(cursor.getDouble(3)) + ", " +
                         formatterGPS.format(cursor.getDouble(4)) + "; " +
                         formatterDB.format(cursor.getDouble(5)) + " dB");
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+        return dataArrayList;
+    }
+
+    public ArrayList<String> getGroupedDataAsStrings() {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT " + ATR_SESSION + ", MAX(" + ATR_TS + "), MIN(" +
+                ATR_TS + "), COUNT(" + ATR_ID + ") FROM " + TBL_NAME + " GROUP BY " + ATR_SESSION, null);
+        ArrayList<String> dataArrayList = new ArrayList<>();
+
+        DecimalFormat formatterDB = new DecimalFormat("#0.00");
+        String pattern = "dd.MM.yyyy hh:mm:ss";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+        if (cursor.moveToFirst()) {
+            do {
+                String dateEnd = simpleDateFormat.format(new Date(cursor.getLong(1)));
+                String dateStart = simpleDateFormat.format(new Date(cursor.getLong(2)));
+                dataArrayList.add(cursor.getInt(0) + ") " + dateStart.toString() + " – "
+                        + dateEnd.toString() + ", Měření: " + cursor.getInt(3));
             } while (cursor.moveToNext());
         }
 

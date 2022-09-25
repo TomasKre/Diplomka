@@ -26,6 +26,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private GoogleMap mMap;
     private ActivityMapBinding binding;
     private DataModel dm;
+    private String msg;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +37,18 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         Context ctx = getApplicationContext();
         dm = new DataModel(ctx);
+
+        //getExtra
+        if (savedInstanceState == null) {
+            Bundle extras = getIntent().getExtras();
+            if(extras == null) {
+                msg = null;
+            } else {
+                msg = extras.getString("item");
+            }
+        } else {
+            msg = (String) savedInstanceState.getSerializable("item");
+        }
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -56,7 +69,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        ArrayList<DataPoint> data = dm.getData();
+        ArrayList<DataPoint> data = dm.getData(Integer.parseInt(msg.split("\\)")[0]));
 
         LatLng lastPosition = null;
         Long lastDatetimeMillis = (long)0;
@@ -73,7 +86,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             lastDatetimeMillis = dataPoint.dt;
             mMap.addMarker(new MarkerOptions().position(lastPosition).title(new Date(dataPoint.dt).toString()));
         }
-        // Místo mouhého spojování bodů lze nakreslit cestu https://abhiandroid.com/programming/googlemaps
+        // Místo pouhého spojování bodů lze nakreslit cestu https://abhiandroid.com/programming/googlemaps
 
         mMap.moveCamera(CameraUpdateFactory.newLatLng(lastPosition));
         mMap.animateCamera(CameraUpdateFactory.zoomTo( 15.0f ));

@@ -264,10 +264,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void showData(DataModel dm) {
-        ArrayList<String> dataPoints = dm.getDataAsStrings();
+        ArrayList<String> dataLines = dm.getGroupedDataAsStrings();
 
         final ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_list_item_1, android.R.id.text1, dataPoints);
+                android.R.layout.simple_list_item_1, android.R.id.text1, dataLines);
         dataWindow.setAdapter(adapter);
 
         dataWindow.setOnItemClickListener((adapterView, view, position, l) -> {

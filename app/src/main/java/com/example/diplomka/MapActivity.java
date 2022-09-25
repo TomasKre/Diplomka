@@ -11,6 +11,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.diplomka.databinding.ActivityMapBinding;
@@ -73,7 +74,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         LatLng lastPosition = null;
         Long lastDatetimeMillis = (long)0;
-        PolylineOptions polylineOptions = new PolylineOptions().clickable(true);
+        PolylineOptions polylineOptions = new PolylineOptions().clickable(true).color(0xffff0000);
         for (DataPoint dataPoint : data) {
             lastPosition = new LatLng(dataPoint.lat, dataPoint.lon);
             // max 5 minut mezi záznamy (300000 ms)
@@ -81,10 +82,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 polylineOptions.add(lastPosition);
             } else {
                 Polyline polyline = googleMap.addPolyline(polylineOptions);
-                polylineOptions = new PolylineOptions().clickable(true);
+                polylineOptions = new PolylineOptions().clickable(true).color(0xffff0000);
             }
             lastDatetimeMillis = dataPoint.dt;
-            mMap.addMarker(new MarkerOptions().position(lastPosition).title(new Date(dataPoint.dt).toString()));
+            mMap.addMarker(new MarkerOptions().position(lastPosition).title(new Date(dataPoint.dt).toString())
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.map_marker)));
         }
         // Místo pouhého spojování bodů lze nakreslit cestu https://abhiandroid.com/programming/googlemaps
 

@@ -2,11 +2,25 @@ package com.example.diplomka;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
+import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.example.diplomka.databinding.PopupInputDataBinding;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -98,7 +112,61 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     @Override
     public void onPolylineClick(@NonNull Polyline polyline) {
-        Toast.makeText(this, "Kliknuto na čáru", Toast.LENGTH_LONG).show();
+        List<LatLng> geoPoints = polyline.getPoints();
 
+        // inflate the layout of the popup window
+        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+        View popupView = inflater.inflate(R.layout.popup_input_data, null);
+
+
+        Spinner spinnerTraffic = (Spinner) popupView.findViewById(R.id.traffic_spinner);
+        ArrayAdapter<CharSequence> adapterTraffic = ArrayAdapter.createFromResource(this,
+                R.array.traffic_array, android.R.layout.simple_spinner_item);
+        adapterTraffic.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerTraffic.setAdapter(adapterTraffic);
+
+        Spinner spinnerParking = (Spinner) popupView.findViewById(R.id.parking_spinner);
+        ArrayAdapter<CharSequence> adapterParking = ArrayAdapter.createFromResource(this,
+                R.array.parking_array, android.R.layout.simple_spinner_item);
+        adapterParking.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerParking.setAdapter(adapterParking);
+
+        Spinner spinnerGreen = (Spinner) popupView.findViewById(R.id.green_spinner);
+        ArrayAdapter<CharSequence> adapterGreen = ArrayAdapter.createFromResource(this,
+                R.array.green_array, android.R.layout.simple_spinner_item);
+        adapterGreen.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerGreen.setAdapter(adapterGreen);
+
+        Spinner spinnerSidewalk = (Spinner) popupView.findViewById(R.id.sidewalk_spinner);
+        ArrayAdapter<CharSequence> adapterSidewalk = ArrayAdapter.createFromResource(this,
+                R.array.sidewalk_array, android.R.layout.simple_spinner_item);
+        adapterSidewalk.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerSidewalk.setAdapter(adapterSidewalk);
+
+        // create the popup window
+        int width = LinearLayout.LayoutParams.WRAP_CONTENT;
+        int height = LinearLayout.LayoutParams.WRAP_CONTENT;
+        boolean focusable = true; // lets taps outside the popup also dismiss it
+        final PopupWindow popupWindow = new PopupWindow(popupView, width, height, focusable);
+
+        Button buttonSave = (Button) popupView.findViewById(R.id.save_button);
+        buttonSave.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch(event.getAction()) {
+                    case MotionEvent.ACTION_CANCEL:
+                    case MotionEvent.ACTION_DOWN:
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        popupWindow.dismiss();
+                        break;
+                }
+                return false;
+            }
+        });
+
+        // show the popup window
+        // which view you pass in doesn't matter, it is only used for the window token
+        popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0);
     }
 }

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="240dp"
+    android:layout_height="320dp"
+    android:background="@color/white"
+    android:layout_margin="10dp">
+
+    <TextView
+        android:id="@+id/traffic_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Provoz:" />
+
+    <Spinner
+        android:id="@+id/traffic_spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/traffic_text"/>
+
+    <TextView
+        android:id="@+id/parking_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Parkovací místa:"
+        android:layout_below="@+id/traffic_text"/>
+
+    <Spinner
+        android:id="@+id/parking_spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/parking_text"
+        android:layout_below="@+id/traffic_text"/>
+
+    <TextView
+        android:id="@+id/green_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Zeleň:"
+        android:layout_below="@+id/parking_text"/>
+
+    <Spinner
+        android:id="@+id/green_spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/green_text"
+        android:layout_below="@+id/parking_text"/>
+
+    <TextView
+        android:id="@+id/sidewalk_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Chodníky:"
+        android:layout_below="@+id/green_text"/>
+
+    <Spinner
+        android:id="@+id/sidewalk_spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/sidewalk_text"
+        android:layout_below="@+id/green_text"/>
+
+    <Button
+        android:id="@+id/save_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Uložit"
+        android:gravity="center_horizontal"
+        android:layout_below="@+id/sidewalk_text"/>
+
+
+
+</RelativeLayout>

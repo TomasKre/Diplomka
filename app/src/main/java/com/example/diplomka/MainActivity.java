@@ -282,6 +282,4 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("item", msg);
         startActivity(intent);
     }
-
-    //TODO: Data přidat ID k ukládání session
 }

@@ -100,7 +100,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             }
             lastDatetimeMillis = dataPoint.dt;
             mMap.addMarker(new MarkerOptions().position(lastPosition).title(new Date(dataPoint.dt).toString())
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.map_marker)));
+                    /*.icon(BitmapDescriptorFactory.fromResource(R.drawable.map_marker))*/);
         }
         // Místo pouhého spojování bodů lze nakreslit cestu https://abhiandroid.com/programming/googlemaps
 

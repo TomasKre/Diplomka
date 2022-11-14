@@ -16,7 +16,7 @@ public class DataModel extends SQLiteOpenHelper {
     protected static final String DB_NAME = "dbStreetData";
     protected static final int DB_VERSION = 1;
 
-    public static final String TBL_NAME = "tbStreeData";
+    public static final String TBL_NAME = "tbDataPoints";
 
     public static final String ATR_ID = "id";
     public static final String ATR_SESSION = "session";

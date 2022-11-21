@@ -19,8 +19,6 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 import android.content.Intent;
 
@@ -264,7 +262,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void showData(DataModel dm) {
-        ArrayList<String> dataLines = dm.getGroupedDataAsStrings();
+        ArrayList<String> dataLines = dm.getGroupedDataPointsAsStrings();
 
         final ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_list_item_1, android.R.id.text1, dataLines);

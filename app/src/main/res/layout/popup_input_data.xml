@@ -68,6 +68,4 @@
         android:gravity="center_horizontal"
         android:layout_below="@+id/sidewalk_text"/>
 
-
-
 </RelativeLayout>

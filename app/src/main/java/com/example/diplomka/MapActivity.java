@@ -2,13 +2,9 @@ package com.example.diplomka;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -18,14 +14,11 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.Spinner;
-import android.widget.Toast;
 
-import com.example.diplomka.databinding.PopupInputDataBinding;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.diplomka.databinding.ActivityMapBinding;
@@ -84,7 +77,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        ArrayList<DataPoint> data = dm.getData(Integer.parseInt(msg.split("\\)")[0]));
+        ArrayList<DataPoint> data = dm.getDataPoints(Integer.parseInt(msg.split("\\)")[0]));
 
         LatLng lastPosition = null;
         Long lastDatetimeMillis = (long)0;
@@ -117,7 +110,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         // inflate the layout of the popup window
         LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
         View popupView = inflater.inflate(R.layout.popup_input_data, null);
-
 
         Spinner spinnerSidewalk = (Spinner) popupView.findViewById(R.id.traffic_spinner);
         ArrayAdapter<CharSequence> adapterSidewalk = ArrayAdapter.createFromResource(this,

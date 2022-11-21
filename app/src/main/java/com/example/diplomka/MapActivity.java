@@ -35,6 +35,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private ActivityMapBinding binding;
     private DataModel dm;
     private String msg;
+    private List<DataPoint> dataPoints;
+    private List<StreetData> streetData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,23 +79,38 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        ArrayList<DataPoint> data = dm.getDataPoints(Integer.parseInt(msg.split("\\)")[0]));
+        dataPoints = dm.getDataPoints(Integer.parseInt(msg.split("\\)")[0]));
+        streetData = dm.getStreetData();
 
         LatLng lastPosition = null;
-        Long lastDatetimeMillis = (long)0;
+        int lastId = 0;
+        Long lastDatetimeMillis = (long) 0;
+        // Color ve tvaru int 0xAARRGGBB
         PolylineOptions polylineOptions = new PolylineOptions().clickable(true).color(0xffff0000);
-        for (DataPoint dataPoint : data) {
-            lastPosition = new LatLng(dataPoint.lat, dataPoint.lon);
-            // max 5 minut mezi záznamy (300000 ms)
-            if (dataPoint.dt - lastDatetimeMillis < 300000) {
-                polylineOptions.add(lastPosition);
-            } else {
-                Polyline polyline = googleMap.addPolyline(polylineOptions);
-                polylineOptions = new PolylineOptions().clickable(true).color(0xffff0000);
+        for (DataPoint dataPoint : dataPoints) {
+            if(lastPosition != null) {
+                // Max 5 minut mezi záznamy (300000 ms)
+                if (dataPoint.dt - lastDatetimeMillis < 300000) {
+                    polylineOptions.add(lastPosition);
+                    polylineOptions.add(new LatLng(dataPoint.lat, dataPoint.lon));
+                    for (StreetData street : streetData) {
+                        if((lastId == street.from && dataPoint.id == street.to) ||
+                                (lastId == street.to && dataPoint.id == street.from)) {
+                            polylineOptions.color(0xff00ff00);
+                            break;
+                        }
+                    }
+                    Polyline polyline = googleMap.addPolyline(polylineOptions);
+                }
             }
+            polylineOptions = new PolylineOptions().clickable(true).color(0xffff0000);
+            lastPosition = new LatLng(dataPoint.lat, dataPoint.lon);
             lastDatetimeMillis = dataPoint.dt;
+            lastId = dataPoint.id;
+
             mMap.addMarker(new MarkerOptions().position(lastPosition).title(new Date(dataPoint.dt).toString())
                     /*.icon(BitmapDescriptorFactory.fromResource(R.drawable.map_marker))*/);
+            // Odkomentovat pro custom map marker
         }
         // Místo pouhého spojování bodů lze nakreslit cestu https://abhiandroid.com/programming/googlemaps
 
@@ -106,6 +123,18 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     @Override
     public void onPolylineClick(@NonNull Polyline polyline) {
         List<LatLng> geoPoints = polyline.getPoints();
+        LatLng pointA = geoPoints.get(0);
+        LatLng pointB = geoPoints.get(1);
+        int from = 0, to = 0;
+        // Asi není nejelegantnější řešení, ale cesty nejspíše nebudou mít počet bodů v řádech tisíců
+        for (DataPoint dataPoint : dataPoints) {
+            if(dataPoint.lat == pointA.latitude && dataPoint.lon == pointA.longitude) {
+                from = dataPoint.id;
+            }
+            if(dataPoint.lat == pointB.latitude && dataPoint.lon == pointB.longitude) {
+                to = dataPoint.id;
+            }
+        }
 
         // inflate the layout of the popup window
         LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
@@ -138,24 +167,38 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         // create the popup window
         int width = LinearLayout.LayoutParams.WRAP_CONTENT;
         int height = LinearLayout.LayoutParams.WRAP_CONTENT;
-        boolean focusable = true; // lets taps outside the popup also dismiss it
-        final PopupWindow popupWindow = new PopupWindow(popupView, width, height, focusable);
+        // focusable true by default
+        final PopupWindow popupWindow = new PopupWindow(popupView, width, height);
 
         Button buttonSave = (Button) popupView.findViewById(R.id.save_button);
-        buttonSave.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch(event.getAction()) {
-                    case MotionEvent.ACTION_CANCEL:
-                    case MotionEvent.ACTION_DOWN:
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        popupWindow.dismiss();
-                        break;
+        if (from != 0 && to != 0) {
+            int finalFrom = from;
+            int finalTo = to;
+            buttonSave.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    switch (event.getAction()) {
+                        case MotionEvent.ACTION_CANCEL:
+                        case MotionEvent.ACTION_DOWN:
+                            break;
+                        case MotionEvent.ACTION_UP:
+                            popupWindow.dismiss();
+                            if(polyline.getColor() == 0xff00ff00) {
+                                dm.updateStreetData(finalFrom, finalTo, spinnerSidewalk.getSelectedItemPosition(),
+                                        spinnerSidewalkWidth.getSelectedItemPosition(), spinnerGreen.getSelectedItemPosition(),
+                                        spinnerComfort.getSelectedItemPosition());
+                            } else {
+                                dm.addStreetData(finalFrom, finalTo, spinnerSidewalk.getSelectedItemPosition(),
+                                        spinnerSidewalkWidth.getSelectedItemPosition(), spinnerGreen.getSelectedItemPosition(),
+                                        spinnerComfort.getSelectedItemPosition());
+                                polyline.setColor(0xff00ff00);
+                            }
+                            break;
+                    }
+                    return false;
                 }
-                return false;
-            }
-        });
+            });
+        }
 
         // show the popup window
         // which view you pass in doesn't matter, it is only used for the window token

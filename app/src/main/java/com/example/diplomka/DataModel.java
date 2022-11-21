@@ -250,6 +250,21 @@ public class DataModel extends SQLiteOpenHelper {
         return dataArrayList;
     }
 
+
+    public void updateStreetData(int from, int to, int sidewalk, int sidewalk_width, int green, int comfort) {
+        ContentValues values = new ContentValues();
+        values.put(ATR_FROM, from);
+        values.put(ATR_TO, to);
+        values.put(ATR_SIDEWALK, sidewalk);
+        values.put(ATR_SIDEWALK_WIDTH, sidewalk_width);
+        values.put(ATR_GREEN, green);
+        values.put(ATR_COMFORT, comfort);
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.update(TBL_NAME_STREETS, values, "point_from=? AND point_to=?",
+                new String[]{Integer.toString(from), Integer.toString(to)});
+    }
+
     public void deleteStreetData() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + TBL_NAME_STREETS);

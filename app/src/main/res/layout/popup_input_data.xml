@@ -10,19 +10,19 @@
         android:id="@+id/traffic_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Provoz:" />
+        android:text="Přítomnost chodníku:" />
 
     <Spinner
         android:id="@+id/traffic_spinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@+id/traffic_text"/>
+        android:layout_toRightOf="@+id/traffic_text" />
 
     <TextView
         android:id="@+id/parking_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Parkovací místa:"
+        android:text="Šířka chodníku:"
         android:layout_below="@+id/traffic_text"/>
 
     <Spinner
@@ -50,7 +50,7 @@
         android:id="@+id/sidewalk_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Chodníky:"
+        android:text="Pocit bezpečí:"
         android:layout_below="@+id/green_text"/>
 
     <Spinner

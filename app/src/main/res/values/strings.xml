@@ -1,18 +1,15 @@
 <resources>
     <string name="app_name">Diplomka</string>
     <string name="title_activity_map">MapActivity</string>
-    <string-array name="traffic_array">
-        <item>Žádný</item>
-        <item>Nízký</item>
-        <item>Střední</item>
-        <item>Vysoký</item>
+    <string-array name="sidewalk_array">
+        <item>Bez chodníku</item>
+        <item>Chodník na jedné straně</item>
+        <item>Chodník na obou stranách</item>
     </string-array>
-    <string-array name="parking_array">
-        <item>Bez vyhrazených míst</item>
-        <item>Prázdné</item>
-        <item>Lehce zaplněné</item>
-        <item>Skoro plné</item>
-        <item>Plné</item>
+    <string-array name="sidewalk_width_array">
+        <item>Úzký</item>
+        <item>Dostatečně široký</item>
+        <item>Velmi široký</item>
     </string-array>
     <string-array name="green_array">
         <item>Bez zeleně</item>
@@ -20,9 +17,9 @@
         <item>Stromy a trávník nebo květiny</item>
         <item>Zelené město</item>
     </string-array>
-    <string-array name="sidewalk_array">
-        <item>Bez chodníku</item>
-        <item>Chodník na jedné straně</item>
-        <item>Chodník na obou stranách</item>
+    <string-array name="comfort_array">
+        <item>Nebezpečná cesta</item>
+        <item>Bezpečná cesta</item>
+        <item>Komfortní cesta</item>
     </string-array>
 </resources>

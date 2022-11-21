@@ -119,17 +119,17 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         View popupView = inflater.inflate(R.layout.popup_input_data, null);
 
 
-        Spinner spinnerTraffic = (Spinner) popupView.findViewById(R.id.traffic_spinner);
-        ArrayAdapter<CharSequence> adapterTraffic = ArrayAdapter.createFromResource(this,
-                R.array.traffic_array, android.R.layout.simple_spinner_item);
-        adapterTraffic.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerTraffic.setAdapter(adapterTraffic);
+        Spinner spinnerSidewalk = (Spinner) popupView.findViewById(R.id.traffic_spinner);
+        ArrayAdapter<CharSequence> adapterSidewalk = ArrayAdapter.createFromResource(this,
+                R.array.sidewalk_array, android.R.layout.simple_spinner_item);
+        adapterSidewalk.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerSidewalk.setAdapter(adapterSidewalk);
 
-        Spinner spinnerParking = (Spinner) popupView.findViewById(R.id.parking_spinner);
-        ArrayAdapter<CharSequence> adapterParking = ArrayAdapter.createFromResource(this,
-                R.array.parking_array, android.R.layout.simple_spinner_item);
-        adapterParking.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerParking.setAdapter(adapterParking);
+        Spinner spinnerSidewalkWidth = (Spinner) popupView.findViewById(R.id.parking_spinner);
+        ArrayAdapter<CharSequence> adapterSidewalkWidth = ArrayAdapter.createFromResource(this,
+                R.array.sidewalk_width_array, android.R.layout.simple_spinner_item);
+        adapterSidewalkWidth.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerSidewalkWidth.setAdapter(adapterSidewalkWidth);
 
         Spinner spinnerGreen = (Spinner) popupView.findViewById(R.id.green_spinner);
         ArrayAdapter<CharSequence> adapterGreen = ArrayAdapter.createFromResource(this,
@@ -137,11 +137,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         adapterGreen.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerGreen.setAdapter(adapterGreen);
 
-        Spinner spinnerSidewalk = (Spinner) popupView.findViewById(R.id.sidewalk_spinner);
-        ArrayAdapter<CharSequence> adapterSidewalk = ArrayAdapter.createFromResource(this,
-                R.array.sidewalk_array, android.R.layout.simple_spinner_item);
-        adapterSidewalk.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerSidewalk.setAdapter(adapterSidewalk);
+        Spinner spinnerComfort = (Spinner) popupView.findViewById(R.id.sidewalk_spinner);
+        ArrayAdapter<CharSequence> adapterComfort = ArrayAdapter.createFromResource(this,
+                R.array.comfort_array, android.R.layout.simple_spinner_item);
+        adapterComfort.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerComfort.setAdapter(adapterComfort);
 
         // create the popup window
         int width = LinearLayout.LayoutParams.WRAP_CONTENT;

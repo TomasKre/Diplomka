@@ -5,6 +5,7 @@ import androidx.fragment.app.FragmentActivity;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -37,6 +38,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private String msg;
     private List<DataPoint> dataPoints;
     private List<StreetData> streetData;
+    private int allPaths = 0;
+    private int greenPaths = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,9 +100,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                         if((lastId == street.from && dataPoint.id == street.to) ||
                                 (lastId == street.to && dataPoint.id == street.from)) {
                             polylineOptions.color(0xff00ff00);
+                            greenPaths++;
                             break;
                         }
                     }
+                    allPaths++;
                     Polyline polyline = googleMap.addPolyline(polylineOptions);
                 }
             }
@@ -114,6 +119,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         }
         // Místo pouhého spojování bodů lze nakreslit cestu https://abhiandroid.com/programming/googlemaps
 
+        checkSendButton();
         mMap.moveCamera(CameraUpdateFactory.newLatLng(lastPosition));
         mMap.animateCamera(CameraUpdateFactory.zoomTo( 15.0f ));
         // Set listeners for click events.
@@ -191,6 +197,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                                 dm.addStreetData(finalFrom, finalTo, spinnerSidewalk.getSelectedItemPosition(),
                                         spinnerSidewalkWidth.getSelectedItemPosition(), spinnerGreen.getSelectedItemPosition(),
                                         spinnerComfort.getSelectedItemPosition());
+                                greenPaths++;
+                                checkSendButton();
                                 polyline.setColor(0xff00ff00);
                             }
                             break;
@@ -203,5 +211,15 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         // show the popup window
         // which view you pass in doesn't matter, it is only used for the window token
         popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0);
+    }
+
+    private void checkSendButton() {
+        Log.v("Map paths", "Green paths: " + greenPaths + "/" + allPaths);
+        Button send_button = findViewById(R.id.send_button);
+        if (allPaths == greenPaths) {
+            send_button.setClickable(true);
+        } else {
+            send_button.setClickable(false);
+        }
     }
 }

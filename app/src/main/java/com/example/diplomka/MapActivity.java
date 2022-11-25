@@ -1,6 +1,7 @@
 package com.example.diplomka;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.content.Context;
@@ -26,7 +27,6 @@ import com.example.diplomka.databinding.ActivityMapBinding;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -40,6 +40,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private List<StreetData> streetData;
     private int allPaths = 0;
     private int greenPaths = 0;
+    private Context ctx;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +49,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         binding = ActivityMapBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        Context ctx = getApplicationContext();
+        ctx = getApplicationContext();
         dm = new DataModel(ctx);
 
         //getExtra
@@ -99,7 +100,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     for (StreetData street : streetData) {
                         if((lastId == street.from && dataPoint.id == street.to) ||
                                 (lastId == street.to && dataPoint.id == street.from)) {
-                            polylineOptions.color(0xff00ff00);
+                            polylineOptions.color(ContextCompat.getColor(this, R.color.accepted));
                             greenPaths++;
                             break;
                         }
@@ -108,7 +109,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     Polyline polyline = googleMap.addPolyline(polylineOptions);
                 }
             }
-            polylineOptions = new PolylineOptions().clickable(true).color(0xffff0000);
+            polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.denied));
             lastPosition = new LatLng(dataPoint.lat, dataPoint.lon);
             lastDatetimeMillis = dataPoint.dt;
             lastId = dataPoint.id;
@@ -189,7 +190,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                             break;
                         case MotionEvent.ACTION_UP:
                             popupWindow.dismiss();
-                            if(polyline.getColor() == 0xff00ff00) {
+                            if(polyline.getColor() == ContextCompat.getColor(ctx, R.color.accepted)) {
                                 dm.updateStreetData(finalFrom, finalTo, spinnerSidewalk.getSelectedItemPosition(),
                                         spinnerSidewalkWidth.getSelectedItemPosition(), spinnerGreen.getSelectedItemPosition(),
                                         spinnerComfort.getSelectedItemPosition());
@@ -199,7 +200,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                                         spinnerComfort.getSelectedItemPosition());
                                 greenPaths++;
                                 checkSendButton();
-                                polyline.setColor(0xff00ff00);
+                                polyline.setColor(ContextCompat.getColor(ctx, R.color.accepted));
                             }
                             break;
                     }
@@ -218,8 +219,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         Button send_button = findViewById(R.id.send_button);
         if (allPaths == greenPaths) {
             send_button.setClickable(true);
+            send_button.setBackgroundColor(ContextCompat.getColor(this, R.color.accepted));
         } else {
             send_button.setClickable(false);
+            send_button.setBackgroundColor(ContextCompat.getColor(this, R.color.denied));
         }
     }
 }

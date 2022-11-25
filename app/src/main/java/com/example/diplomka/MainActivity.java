@@ -29,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
 
     public int session;
     private DataModel dm;
+    private int minTimeMs = 2500;
+    private int minDistanceM = 5;
 
     ListView dataWindow;
 
@@ -61,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                     && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 locationManager.requestLocationUpdates(
-                        LocationManager.GPS_PROVIDER, 30000, 50, locationListener);
+                        LocationManager.GPS_PROVIDER, minTimeMs, minDistanceM, locationListener);
             }
         } catch (Exception e) {
             Log.v("Location", "Není povoleno použití GPS");
@@ -144,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
 
                 //recordLocation();
                 locationManager.requestLocationUpdates(
-                        LocationManager.GPS_PROVIDER, 30000, 50, locationListener);
+                        LocationManager.GPS_PROVIDER, minTimeMs, minDistanceM, locationListener);
             }
         } catch (Exception e) {
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
@@ -204,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
                             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                                     && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                                 locationManager.requestLocationUpdates(
-                                        LocationManager.GPS_PROVIDER, 30000, 50, locationListener);
+                                        LocationManager.GPS_PROVIDER, minTimeMs, minDistanceM, locationListener);
                             }
                         } catch (Exception e) {
                             Log.v("Location", "Není povoleno použití GPS (Microphone permissions)");
@@ -224,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
                             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                                     && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                                 locationManager.requestLocationUpdates(
-                                        LocationManager.GPS_PROVIDER, 30000, 50, locationListener);
+                                        LocationManager.GPS_PROVIDER, minTimeMs, minDistanceM, locationListener);
                             }
                         } catch (Exception e) {
                             Log.v("Location", "Není povoleno použití GPS (Location permissions)");
@@ -247,7 +249,7 @@ public class MainActivity extends AppCompatActivity {
                             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                                     && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                                 locationManager.requestLocationUpdates(
-                                        LocationManager.GPS_PROVIDER, 30000, 50, locationListener);
+                                        LocationManager.GPS_PROVIDER, minTimeMs, minDistanceM, locationListener);
                             }
                         } catch (Exception e) {
                             Log.v("Location", "Není povoleno použití GPS (Storage permissions)");

@@ -250,6 +250,30 @@ public class DataModel extends SQLiteOpenHelper {
         return dataArrayList;
     }
 
+    public ArrayList<StreetData> getStreetData(int session) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT " + ATR_ID + ", " + ATR_TO + ", " + ATR_FROM +
+                ", " + ATR_SIDEWALK + "," + ATR_SIDEWALK_WIDTH + ", " + ATR_GREEN + ", " +
+                ATR_COMFORT + " FROM " + TBL_NAME_STREETS + " WHERE " + ATR_FROM + " IN (SELECT " +
+                ATR_ID + " FROM " + TBL_NAME_POINTS + " WHERE " + ATR_SESSION + " = ? ) ORDER BY " +
+                ATR_FROM, new String[]{Integer.toString(session)});
+        ArrayList<StreetData> dataArrayList = new ArrayList<>();
+
+        if (cursor.moveToFirst()) {
+            do {
+                dataArrayList.add(new StreetData(cursor.getInt(0), cursor.getInt(1),
+                        cursor.getInt(2), cursor.getInt(3),
+                        cursor.getInt(4), cursor.getInt(5),
+                        cursor.getInt(6)));
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+        return dataArrayList;
+    }
+
 
     public void updateStreetData(int from, int to, int sidewalk, int sidewalk_width, int green, int comfort) {
         ContentValues values = new ContentValues();

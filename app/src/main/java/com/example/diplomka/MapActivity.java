@@ -42,6 +42,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private int greenPaths = 0;
     private Context ctx;
 
+    private static final int maxTimeMs = 30000; //mezi gps měřeními
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,6 +66,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             msg = (String) savedInstanceState.getSerializable("item");
         }
 
+        int session = Integer.parseInt(msg.split("\\)")[0]);
+        dataPoints = dm.getDataPoints(session);
+        streetData = dm.getStreetData(session);
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -73,8 +79,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
+     * This is where we can add markers or lines, add listeners or move the camera.
      * If Google Play services is not installed on the device, the user will be prompted to install
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
@@ -82,9 +87,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
-        dataPoints = dm.getDataPoints(Integer.parseInt(msg.split("\\)")[0]));
-        streetData = dm.getStreetData();
 
         LatLng lastPosition = null;
         int lastId = 0;
@@ -94,7 +96,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         for (DataPoint dataPoint : dataPoints) {
             if(lastPosition != null) {
                 // Max 5 minut mezi záznamy (300000 ms)
-                if (dataPoint.dt - lastDatetimeMillis < 300000) {
+                if (dataPoint.dt - lastDatetimeMillis < maxTimeMs) {
                     polylineOptions.add(lastPosition);
                     polylineOptions.add(new LatLng(dataPoint.lat, dataPoint.lon));
                     for (StreetData street : streetData) {

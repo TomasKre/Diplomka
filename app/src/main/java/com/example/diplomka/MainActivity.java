@@ -234,7 +234,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 } else {
                     Toast.makeText(this, "Zakázano používat přesnou polohu.", Toast.LENGTH_LONG).show();
-
                 }
                 return;
             }

@@ -32,7 +32,7 @@ public class LocationChangeListener implements LocationListener {
 
         double noise = micRecording.getAmplitude();
         Log.v("onLocationChanged", "Noise: " + noise);
-        dm.addDataPoints(timestamp, main.session, loc.getLatitude(), loc.getLongitude(), noise);
+        dm.addDataPoints(timestamp, main.session, loc.getLatitude(), loc.getLongitude(), noise, 0);
 
 
         main.showData(dm);

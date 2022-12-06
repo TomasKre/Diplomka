@@ -119,6 +119,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                                     Polyline polyline = googleMap.addPolyline(polylineOptions);
                                     polylineOptions = new PolylineOptions().clickable(true)
                                             .color(ContextCompat.getColor(this, R.color.denied));
+                                    polylineOptions.add(position);
                                     mMap.addMarker(new MarkerOptions().position(position)
                                             .title(new Date(dataPoint.dt).toString()));
                                 }
@@ -128,8 +129,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     } else {
                         Polyline polyline = googleMap.addPolyline(polylineOptions);
                         polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.denied));
-                        allPaths++;
+                        polylineOptions.add(position);
                         mMap.addMarker(new MarkerOptions().position(position).title(new Date(dataPoint.dt).toString()));
+                        allPaths++;
                     }
                 } else {
                     LatLng position = new LatLng(dataPoint.lat, dataPoint.lon);

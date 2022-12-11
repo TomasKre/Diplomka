@@ -12,38 +12,56 @@
         android:layout_height="420dp"
         android:scrollbars="none"
         android:layout_weight="1"
-        app:layout_constraintLeft_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginHorizontal="25dp"
         android:layout_marginTop="25dp"
         android:background="@drawable/black_border" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/microphone_permission"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Grant microphone \npermissions"
+        app:icon="@drawable/microphone"
+        android:layout_width="140dp"
+        android:layout_height="40dp"
+        app:iconSize="16dp"
+        app:iconGravity="start"
+        app:iconPadding="8dp"
+        android:text="Mikrofon"
+        android:layout_marginBottom="5dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent" />
+        app:layout_constraintLeft_toLeftOf="@+id/data_window" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/location_permission"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Grant location \npermissions"
+        app:icon="@drawable/location"
+        android:layout_width="140dp"
+        android:layout_height="40dp"
+        app:iconSize="16dp"
+        app:iconGravity="start"
+        app:iconPadding="8dp"
+        android:text="Poloha"
         app:layout_constraintBottom_toTopOf="@id/microphone_permission"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent" />
+        app:layout_constraintLeft_toLeftOf="@+id/data_window" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/storage_permission"
+        app:icon="@drawable/storage"
+        android:layout_width="140dp"
+        android:layout_height="40dp"
+        app:iconSize="16dp"
+        app:iconGravity="start"
+        app:iconPadding="8dp"
+        android:text="Úložiště"
+        app:layout_constraintBottom_toTopOf="@id/location_permission"
+        app:layout_constraintLeft_toLeftOf="@+id/data_window" />
+
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Grant storage \npermissions"
-        app:layout_constraintBottom_toTopOf="@id/location_permission"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent" />
+        android:text="Oprávnění aplikace:"
+        android:layout_marginBottom="5dp"
+        app:layout_constraintBottom_toTopOf="@id/storage_permission"
+        app:layout_constraintLeft_toLeftOf="@+id/data_window" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

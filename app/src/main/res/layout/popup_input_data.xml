@@ -100,5 +100,5 @@
         android:layout_marginBottom="5dp"
         android:layout_marginRight="20dp"
         android:background="@color/denied"/>
-    
+
 </RelativeLayout>

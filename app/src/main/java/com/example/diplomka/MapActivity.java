@@ -21,7 +21,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.diplomka.databinding.ActivityMapBinding;
@@ -241,13 +240,13 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
         View popupView = inflater.inflate(R.layout.popup_input_data, null);
 
-        Spinner spinnerSidewalk = (Spinner) popupView.findViewById(R.id.traffic_spinner);
+        Spinner spinnerSidewalk = (Spinner) popupView.findViewById(R.id.sidewalk_spinner);
         ArrayAdapter<CharSequence> adapterSidewalk = ArrayAdapter.createFromResource(this,
                 R.array.sidewalk_array, android.R.layout.simple_spinner_item);
         adapterSidewalk.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerSidewalk.setAdapter(adapterSidewalk);
 
-        Spinner spinnerSidewalkWidth = (Spinner) popupView.findViewById(R.id.parking_spinner);
+        Spinner spinnerSidewalkWidth = (Spinner) popupView.findViewById(R.id.sidewalk_width_spinner);
         ArrayAdapter<CharSequence> adapterSidewalkWidth = ArrayAdapter.createFromResource(this,
                 R.array.sidewalk_width_array, android.R.layout.simple_spinner_item);
         adapterSidewalkWidth.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -259,7 +258,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         adapterGreen.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerGreen.setAdapter(adapterGreen);
 
-        Spinner spinnerComfort = (Spinner) popupView.findViewById(R.id.sidewalk_spinner);
+        Spinner spinnerComfort = (Spinner) popupView.findViewById(R.id.safespace_spinner);
         ArrayAdapter<CharSequence> adapterComfort = ArrayAdapter.createFromResource(this,
                 R.array.comfort_array, android.R.layout.simple_spinner_item);
         adapterComfort.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -272,6 +271,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         final PopupWindow popupWindow = new PopupWindow(popupView, width, height);
 
         Button buttonSave = (Button) popupView.findViewById(R.id.save_button);
+        Button buttonCancel = (Button) popupView.findViewById(R.id.cancel_button);
         if (from != 0 && to != 0) {
             int finalFrom = from;
             int finalTo = to;
@@ -298,6 +298,21 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 }
             });
         }
+
+        buttonCancel.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_CANCEL:
+                    case MotionEvent.ACTION_DOWN:
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        popupWindow.dismiss();
+                        break;
+                }
+                return false;
+            }
+        });
 
         // show the popup window
         // which view you pass in doesn't matter, it is only used for the window token

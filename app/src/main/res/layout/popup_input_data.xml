@@ -3,69 +3,102 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="240dp"
     android:layout_height="320dp"
-    android:background="@color/white"
+    android:background="@drawable/popup_background"
     android:layout_margin="10dp">
 
     <TextView
-        android:id="@+id/traffic_text"
+        android:id="@+id/sidewalk_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Přítomnost chodníku:" />
+        android:text="Přítomnost chodníku:"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"/>
 
     <Spinner
-        android:id="@+id/traffic_spinner"
+        android:id="@+id/sidewalk_spinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@+id/traffic_text" />
+        android:layout_alignParentRight="true"
+        android:layout_alignBottom="@+id/sidewalk_text"
+        android:textAlignment="textEnd"
+        android:layout_marginRight="-5dp"/>
 
     <TextView
-        android:id="@+id/parking_text"
+        android:id="@+id/sidewalk_width_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Šířka chodníku:"
-        android:layout_below="@+id/traffic_text"/>
+        android:layout_below="@+id/sidewalk_text"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"/>
 
     <Spinner
-        android:id="@+id/parking_spinner"
+        android:id="@+id/sidewalk_width_spinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@+id/parking_text"
-        android:layout_below="@+id/traffic_text"/>
+        android:layout_alignParentRight="true"
+        android:layout_alignBottom="@+id/sidewalk_width_text"
+        android:textAlignment="textEnd"
+        android:layout_marginRight="-5dp"/>
 
     <TextView
         android:id="@+id/green_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Zeleň:"
-        android:layout_below="@+id/parking_text"/>
+        android:layout_below="@+id/sidewalk_width_text"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"/>
 
     <Spinner
         android:id="@+id/green_spinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@+id/green_text"
-        android:layout_below="@+id/parking_text"/>
+        android:layout_alignParentRight="true"
+        android:layout_alignBottom="@+id/green_text"
+        android:textAlignment="textEnd"
+        android:layout_marginRight="-5dp"/>
 
     <TextView
-        android:id="@+id/sidewalk_text"
+        android:id="@+id/safespace_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Pocit bezpečí:"
-        android:layout_below="@+id/green_text"/>
+        android:layout_below="@+id/green_text"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"/>
 
     <Spinner
-        android:id="@+id/sidewalk_spinner"
+        android:id="@+id/safespace_spinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@+id/sidewalk_text"
-        android:layout_below="@+id/green_text"/>
+        android:layout_alignParentRight="true"
+        android:layout_alignBottom="@+id/safespace_text"
+        android:textAlignment="textEnd"
+        android:layout_marginRight="-5dp"/>
 
     <Button
         android:id="@+id/save_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Uložit"
-        android:gravity="center_horizontal"
-        android:layout_below="@+id/sidewalk_text"/>
+        android:layout_below="@+id/safespace_text"
+        android:layout_alignParentLeft="true"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginLeft="20dp"
+        android:background="@color/accepted"/>
 
+    <Button
+        android:id="@+id/cancel_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Zrušit"
+        android:layout_below="@+id/safespace_text"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginRight="20dp"
+        android:background="@color/denied"/>
+    
 </RelativeLayout>

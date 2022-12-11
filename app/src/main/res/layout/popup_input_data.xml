@@ -87,7 +87,7 @@
         android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp"
         android:layout_marginLeft="20dp"
-        android:background="@color/accepted"/>
+        android:background="@drawable/button_save"/>
 
     <Button
         android:id="@+id/cancel_button"
@@ -99,6 +99,6 @@
         android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp"
         android:layout_marginRight="20dp"
-        android:background="@color/denied"/>
+        android:background="@drawable/button_deny"/>
 
 </RelativeLayout>

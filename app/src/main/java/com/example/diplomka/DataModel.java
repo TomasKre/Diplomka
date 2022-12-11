@@ -207,6 +207,14 @@ public class DataModel extends SQLiteOpenHelper {
         db.close();
     }
 
+    public void deleteSoloDataPoints() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("DELETE FROM " + TBL_NAME_POINTS + " WHERE " + ATR_SESSION + " IN( SELECT " +
+                ATR_SESSION + " FROM " + TBL_NAME_POINTS + " GROUP BY " + ATR_SESSION +
+                " HAVING COUNT(*) == 1 )");
+        db.close();
+    }
+
     public void deleteDataPointsById(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + TBL_NAME_POINTS + " WHERE " + ATR_ID +

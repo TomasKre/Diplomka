@@ -48,16 +48,13 @@ public class MainActivity extends AppCompatActivity {
         Button locationButton = findViewById(R.id.location_permission);
         Button microphoneButton = findViewById(R.id.microphone_permission);
         Button storageButton = findViewById(R.id.storage_permission);
-
         dataWindow = findViewById(R.id.data_window);
-
         dm = new DataModel(this);
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
-        locationManager = (LocationManager)
-                getSystemService(Context.LOCATION_SERVICE);
+        dm.deleteSoloDataPoints();
 
         //Check if GPS is enabled or not
-
         try {
             locationListener = new LocationChangeListener(this, this);
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED

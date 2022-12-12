@@ -158,35 +158,37 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             double meters = 0.0;
             for (DataPoint dataPoint : dataPoints) {
                 if(lastPosition != null) {
-                    if (id_from == 0) {
-                        id_from = dataPoint.id;
-                    }
                     LatLng position = new LatLng(dataPoint.lat, dataPoint.lon);
                     if (dataPoint.dt - lastDatetimeMillis < maxTimeMs) {
                         meters += getDistanceInMeters(lastPosition.latitude, dataPoint.lat,
                                 lastPosition.longitude, dataPoint.lon);
                         polylineOptions.add(position);
-                        dm.updateDataPoints(dataPoint.id, part);
                         if (meters >= maxDistanceM) {
                             meters = 0;
                             Polyline polyline = googleMap.addPolyline(polylineOptions);
                             dm.addStreetData(id_from, dataPoint.id, part++, 0, 0,
                                     0, 0, 0);
+                            id_from = dataPoint.id;
                             polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.denied));
                             polylineOptions.add(position);
                             allPaths++;
                             mMap.addMarker(new MarkerOptions().position(position).title(new Date(dataPoint.dt).toString()));
                         }
+                        dm.updateDataPoints(dataPoint.id, part);
                     } else {
                         meters = 0;
                         Polyline polyline = googleMap.addPolyline(polylineOptions);
                         dm.addStreetData(id_from, dataPoint.id, part++, 0, 0,
                                 0, 0, 0);
+                        id_from = dataPoint.id;
                         polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.denied));
                         allPaths++;
                         mMap.addMarker(new MarkerOptions().position(position).title(new Date(dataPoint.dt).toString()));
+                        dm.updateDataPoints(dataPoint.id, part);
                     }
                 } else {
+                    id_from = dataPoint.id;
+                    dm.updateDataPoints(dataPoint.id, part);
                     LatLng position = new LatLng(dataPoint.lat, dataPoint.lon);
                     polylineOptions.add(position);
                     mMap.addMarker(new MarkerOptions().position(position).title(new Date(dataPoint.dt).toString()));

@@ -268,7 +268,11 @@ public class MainActivity extends AppCompatActivity {
 
         dataWindow.setOnItemClickListener((adapterView, view, position, l) -> {
             String value = adapter.getItem(position);
-            openMapIntent(value);
+            if (Integer.parseInt(value.split("\\)")[0]) != session) {
+                openMapIntent(value);
+            } else {
+                Toast.makeText(this, "Nelze rozkliknout právě probíhající měření.", Toast.LENGTH_LONG).show();
+            }
         });
     }
 

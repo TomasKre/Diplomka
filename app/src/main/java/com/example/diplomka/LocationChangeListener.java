@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class LocationChangeListener implements LocationListener {
@@ -34,7 +35,18 @@ public class LocationChangeListener implements LocationListener {
         Log.v("onLocationChanged", "Noise: " + noise);
         dm.addDataPoints(timestamp, main.session, loc.getLatitude(), loc.getLongitude(), noise, 0);
 
-
+        // vrací přesnost v metrech ve formě standardní odchylky
+        // reálná hodnota nachází v okruhu x metrů od naměřeného bodu s pravděpodobností
+        // 1σ ~ 68.2 %
+        // 2σ ~ 95.4 %
+        // 3σ ~ 99.6 %
+        // 4σ ~ 99.8 %
+        if (loc.hasAccuracy()) {
+            int accuracyInM = (int) Math.round(2 * loc.getAccuracy());
+            TextView accuracyTextView = main.findViewById(R.id.accuracy_value);
+            accuracyTextView.setText(Integer.toString(accuracyInM));
+        }
+        
         main.showData(dm);
     }
 

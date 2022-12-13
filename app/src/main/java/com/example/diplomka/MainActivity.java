@@ -16,6 +16,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -50,29 +51,21 @@ public class MainActivity extends AppCompatActivity {
         Button microphoneButton = findViewById(R.id.microphone_permission);
         Button storageButton = findViewById(R.id.storage_permission);
         ImageView infoButton = findViewById(R.id.info_button);
+        Switch onOffSwitch = findViewById(R.id.measure_switch);
         dataWindow = findViewById(R.id.data_window);
-        dm = new DataModel(this);
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
+        dm = new DataModel(this);
         dm.deleteSoloDataPoints();
 
-        //Check if GPS is enabled or not
-        try {
-            locationListener = new LocationChangeListener(this, this);
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                locationManager.requestLocationUpdates(
-                        LocationManager.GPS_PROVIDER, minTimeMs, minDistanceM, locationListener);
-            }
-        } catch (Exception e) {
-            Log.v("Location", "Není povoleno použití GPS");
-        }
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        locationListener = new LocationChangeListener(this, this);
+
 
         locationButton.setOnClickListener(v -> requestLocationPermission());
         microphoneButton.setOnClickListener(v -> requestMicrophonePermissions());
         storageButton.setOnClickListener(v -> requestExternalStoragePermissions());
         infoButton.setOnClickListener(v -> infoButtonClickListener());
-
+        onOffSwitch.setOnClickListener(v -> onOffSwitchClickListener((Switch) v));
         showData(dm);
     }
 
@@ -143,8 +136,6 @@ public class MainActivity extends AppCompatActivity {
                     == PackageManager.PERMISSION_GRANTED) {
 
                 //recordLocation();
-                locationManager.requestLocationUpdates(
-                        LocationManager.GPS_PROVIDER, minTimeMs, minDistanceM, locationListener);
             }
         } catch (Exception e) {
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
@@ -196,40 +187,14 @@ public class MainActivity extends AppCompatActivity {
         Log.v("onRequestPermissionsResult", "grantResults: " + Arrays.toString(grantResults));
         switch (requestCode) {
             case MY_PERMISSIONS_RECORD_AUDIO: {
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    if (locationListener == null) {
-                        try {
-                            locationListener = new LocationChangeListener(this, this);
-                            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                                locationManager.requestLocationUpdates(
-                                        LocationManager.GPS_PROVIDER, minTimeMs, minDistanceM, locationListener);
-                            }
-                        } catch (Exception e) {
-                            Log.v("Location", "Není povoleno použití GPS (Microphone permissions)");
-                        }
-                    }
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 } else {
                     Toast.makeText(this, "Zakázáno používat mikrofon.", Toast.LENGTH_LONG).show();
                 }
                 return;
             }
             case MY_PERMISSIONS_ACCESS_LOCATION: {
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    if (locationListener == null) {
-                        try {
-                            locationListener = new LocationChangeListener(this, this);
-                            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                                locationManager.requestLocationUpdates(
-                                        LocationManager.GPS_PROVIDER, minTimeMs, minDistanceM, locationListener);
-                            }
-                        } catch (Exception e) {
-                            Log.v("Location", "Není povoleno použití GPS (Location permissions)");
-                        }
-                    }
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 } else {
                     Toast.makeText(this, "Zakázano používat přesnou polohu.", Toast.LENGTH_LONG).show();
                 }
@@ -240,18 +205,6 @@ public class MainActivity extends AppCompatActivity {
                         && grantResults[1] == PackageManager.PERMISSION_GRANTED
                         && grantResults[2] == PackageManager.PERMISSION_GRANTED) {
                     // TODO: index 0 - manage nepovolen, 1 a 2 read a write povoleny - proč?
-                    if (locationListener == null) {
-                        try {
-                            locationListener = new LocationChangeListener(this, this);
-                            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                                locationManager.requestLocationUpdates(
-                                        LocationManager.GPS_PROVIDER, minTimeMs, minDistanceM, locationListener);
-                            }
-                        } catch (Exception e) {
-                            Log.v("Location", "Není povoleno použití GPS (Storage permissions)");
-                        }
-                    }
                 } else {
                     Toast.makeText(this, "Zakázáno používat externí úložiště.", Toast.LENGTH_LONG).show();
                 }
@@ -279,7 +232,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void openMapIntent(String msg) {
         Intent intent = new Intent(this, MapActivity.class);
-        //intent.putExtra(ID, String.valueOf(id));
         intent.putExtra("item", msg);
         startActivity(intent);
     }
@@ -287,5 +239,30 @@ public class MainActivity extends AppCompatActivity {
     private void infoButtonClickListener() {
         Intent intent = new Intent(this, InfoActivity.class);
         startActivity(intent);
+    }
+
+    private void onOffSwitchClickListener(Switch v) {
+        if(v.isChecked()) {
+            //Check if GPS is enabled or not
+            try {
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                        && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTimeMs, minDistanceM, locationListener);
+                }
+            } catch (Exception e) {
+                Toast.makeText(this, "Error switch" + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        } else {
+            // Odregistrace updatů lokace
+            locationManager.removeUpdates(locationListener);
+            // Inkrement session
+            SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("session_prefs", 0);
+            session = sharedPreferences.getInt("session", 0);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putInt("session", ++session);
+            editor.apply();
+            // Kontrola a odstranění osamocených data pointů
+            dm.deleteSoloDataPoints();
+        }
     }
 }

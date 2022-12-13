@@ -326,10 +326,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         Button send_button = findViewById(R.id.send_button);
         if (allPaths == greenPaths && allPaths > 0) {
             send_button.setClickable(true);
-            send_button.setBackground(ContextCompat.getDrawable(this, R.drawable.button_save));
+            send_button.setBackground(ContextCompat.getDrawable(this, R.drawable.button_save_border));
         } else {
             send_button.setClickable(false);
-            send_button.setBackground(ContextCompat.getDrawable(this, R.drawable.button_deny));
+            send_button.setBackground(ContextCompat.getDrawable(this, R.drawable.button_deny_border));
         }
     }
 

@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -48,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
         Button locationButton = findViewById(R.id.location_permission);
         Button microphoneButton = findViewById(R.id.microphone_permission);
         Button storageButton = findViewById(R.id.storage_permission);
+        ImageView infoButton = findViewById(R.id.info_button);
         dataWindow = findViewById(R.id.data_window);
         dm = new DataModel(this);
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -67,10 +69,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         locationButton.setOnClickListener(v -> requestLocationPermission());
-
         microphoneButton.setOnClickListener(v -> requestMicrophonePermissions());
-
         storageButton.setOnClickListener(v -> requestExternalStoragePermissions());
+        infoButton.setOnClickListener(v -> infoButtonClickListener());
 
         showData(dm);
     }
@@ -280,6 +281,11 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, MapActivity.class);
         //intent.putExtra(ID, String.valueOf(id));
         intent.putExtra("item", msg);
+        startActivity(intent);
+    }
+
+    private void infoButtonClickListener() {
+        Intent intent = new Intent(this, InfoActivity.class);
         startActivity(intent);
     }
 }

@@ -27,6 +27,8 @@ import com.example.diplomka.databinding.ActivityMapBinding;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -120,7 +122,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                                             .color(ContextCompat.getColor(this, R.color.denied));
                                     polylineOptions.add(position);
                                     mMap.addMarker(new MarkerOptions().position(position)
-                                            .title(new Date(dataPoint.dt).toString()));
+                                            .title(getHumanDate(dataPoint.dt)));
                                 }
                             }
                             lastPart = dataPoint.part;
@@ -129,13 +131,13 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                         Polyline polyline = googleMap.addPolyline(polylineOptions);
                         polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.denied));
                         polylineOptions.add(position);
-                        mMap.addMarker(new MarkerOptions().position(position).title(new Date(dataPoint.dt).toString()));
+                        mMap.addMarker(new MarkerOptions().position(position).title(getHumanDate(dataPoint.dt)));
                         allPaths++;
                     }
                 } else {
                     LatLng position = new LatLng(dataPoint.lat, dataPoint.lon);
                     polylineOptions.add(position);
-                    mMap.addMarker(new MarkerOptions().position(position).title(new Date(dataPoint.dt).toString()));
+                    mMap.addMarker(new MarkerOptions().position(position).title(getHumanDate(dataPoint.dt)));
                 }
                 lastPosition = new LatLng(dataPoint.lat, dataPoint.lon);
                 lastDatetimeMillis = dataPoint.dt;
@@ -151,7 +153,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     polylineOptions = new PolylineOptions().clickable(true)
                             .color(ContextCompat.getColor(this, R.color.denied));
                     mMap.addMarker(new MarkerOptions().position(lastPosition)
-                            .title(new Date(lastDatetimeMillis).toString()));
+                            .title(getHumanDate(lastDatetimeMillis)));
                 }
             }
         } else {
@@ -172,7 +174,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                             polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.denied));
                             polylineOptions.add(position);
                             allPaths++;
-                            mMap.addMarker(new MarkerOptions().position(position).title(new Date(dataPoint.dt).toString()));
+                            mMap.addMarker(new MarkerOptions().position(position).title(getHumanDate(dataPoint.dt)));
                         }
                         dm.updateDataPoints(dataPoint.id, part);
                     } else {
@@ -183,7 +185,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                         id_from = dataPoint.id;
                         polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.denied));
                         allPaths++;
-                        mMap.addMarker(new MarkerOptions().position(position).title(new Date(dataPoint.dt).toString()));
+                        mMap.addMarker(new MarkerOptions().position(position).title(getHumanDate(dataPoint.dt)));
                         dm.updateDataPoints(dataPoint.id, part);
                     }
                 } else {
@@ -191,7 +193,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     dm.updateDataPoints(dataPoint.id, part);
                     LatLng position = new LatLng(dataPoint.lat, dataPoint.lon);
                     polylineOptions.add(position);
-                    mMap.addMarker(new MarkerOptions().position(position).title(new Date(dataPoint.dt).toString()));
+                    mMap.addMarker(new MarkerOptions().position(position).title(getHumanDate(dataPoint.dt)));
                 }
                 lastPosition = new LatLng(dataPoint.lat, dataPoint.lon);
                 lastDatetimeMillis = dataPoint.dt;
@@ -202,12 +204,12 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 dm.addStreetData(id_from, lastId, part, 0, 0,
                         0, 0, 0);
                 allPaths++;
-                mMap.addMarker(new MarkerOptions().position(lastPosition).title(new Date(lastDatetimeMillis).toString()));
+                mMap.addMarker(new MarkerOptions().position(lastPosition).title(getHumanDate(lastDatetimeMillis)));
             }
         }
 
         // Custom map marker takto:
-        /*mMap.addMarker(new MarkerOptions().position(lastPosition).title(new Date(dataPoint.dt).toString())
+        /*mMap.addMarker(new MarkerOptions().position(lastPosition).title(getHumanDate(dataPoint.dt))
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.map_marker)));*/
 
         // Místo pouhého spojování bodů lze nakreslit cestu https://abhiandroid.com/programming/googlemaps
@@ -343,5 +345,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c * 1000; // convert to meters
+    }
+
+    public static String getHumanDate(long timeInMillis) {
+        String pattern = "dd.MM.yyyy hh:mm:ss";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+        return simpleDateFormat.format(timeInMillis);
     }
 }

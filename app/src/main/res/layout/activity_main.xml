@@ -18,6 +18,51 @@
         android:layout_marginTop="25dp"
         android:background="@drawable/black_border" />
 
+    <RadioGroup
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        app:layout_constraintLeft_toLeftOf="@+id/data_window"
+        app:layout_constraintTop_toBottomOf="@id/data_window">
+
+        <RadioButton
+            android:id="@+id/radio_open"
+            android:button="@null"
+            android:drawableBottom="@android:drawable/btn_radio"
+            android:gravity="center"
+            android:layout_weight="1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
+            android:onClick="onRadioButtonClicked"
+            android:checked="true"
+            android:text="Otevřít" />
+
+        <RadioButton
+            android:id="@+id/radio_send"
+            android:button="@null"
+            android:drawableBottom="@android:drawable/btn_radio"
+            android:gravity="center"
+            android:layout_weight="1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
+            android:onClick="onRadioButtonClicked"
+            android:text="Odeslat" />
+
+        <RadioButton
+            android:id="@+id/radio_delete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:button="@null"
+            android:drawableBottom="@android:drawable/btn_radio"
+            android:gravity="center"
+            android:onClick="onRadioButtonClicked"
+            android:text="Smazat" />
+    </RadioGroup>
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/microphone_permission"
         app:icon="@drawable/microphone"
@@ -92,7 +137,7 @@
         android:id="@+id/accuracy_value"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="50"
+        android:text="__"
         android:layout_marginTop="5dp"
         android:textSize="9dp"
         android:textColor="@color/black"

@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private DataModel dm;
     private int minTimeMs = 2500;
     private int minDistanceM = 5;
+    private int[] permissionsRequests;
 
     ListView dataWindow;
 
@@ -44,10 +45,12 @@ public class MainActivity extends AppCompatActivity {
         session = sharedPreferences.getInt("session", 0);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putInt("session", ++session);
-        editor.apply();
+        editor.apply();// TODO: odmazat?
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        permissionsRequests = new int[3]; // TODO: upravit aby se nastavovalo na 0 při zapnutí aplikace pokud jsou perms -1
 
         Button locationButton = findViewById(R.id.location_permission);
         Button microphoneButton = findViewById(R.id.microphone_permission);
@@ -59,10 +62,7 @@ public class MainActivity extends AppCompatActivity {
         dm = new DataModel(this);
         dm.deleteSoloDataPoints();
 
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        locationListener = new LocationChangeListener(this, this);
-
-
+        checkPermissionButtons();
         locationButton.setOnClickListener(v -> requestLocationPermission());
         microphoneButton.setOnClickListener(v -> requestMicrophonePermissions());
         storageButton.setOnClickListener(v -> requestExternalStoragePermissions());
@@ -77,106 +77,34 @@ public class MainActivity extends AppCompatActivity {
 
     protected void requestExternalStoragePermissions() {
         try {
-            if (ContextCompat.checkSelfPermission(this,
-                    Manifest.permission.MANAGE_EXTERNAL_STORAGE)
-                    != PackageManager.PERMISSION_GRANTED) {
-                if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                        Manifest.permission.MANAGE_EXTERNAL_STORAGE)) {
-                    Toast.makeText(this, "Prosím, povolte využití přístupu k datům.", Toast.LENGTH_LONG).show();
-
-                    ActivityCompat.requestPermissions(this,
-                            new String[]{Manifest.permission.MANAGE_EXTERNAL_STORAGE,
-                                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                                    Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                            MY_PERMISSIONS_EXTERNAL_STORAGE);
-
-                } else {
-                    ActivityCompat.requestPermissions(this,
-                            new String[]{Manifest.permission.MANAGE_EXTERNAL_STORAGE,
-                                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                                    Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                            MY_PERMISSIONS_EXTERNAL_STORAGE);
-                }
-            }
-            else if (ContextCompat.checkSelfPermission(this,
-                    Manifest.permission.MANAGE_EXTERNAL_STORAGE)//další podmínka
-                    == PackageManager.PERMISSION_GRANTED) {
-
-                //saveData();
+            if ((ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE},MY_PERMISSIONS_EXTERNAL_STORAGE);
             }
         } catch (Exception e) {
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Storage request error " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
     protected void requestLocationPermission() {
         try {
-            if (ContextCompat.checkSelfPermission(this,
-                    Manifest.permission.ACCESS_FINE_LOCATION)
-                    != PackageManager.PERMISSION_GRANTED) {
-
-                //When permission is not granted by user, show them message why this permission is needed.
-                if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                        Manifest.permission.ACCESS_FINE_LOCATION)) {
-                    Toast.makeText(this, "Prosím, povolte využití polohy.", Toast.LENGTH_LONG).show();
-
-                    //Give user option to still opt-in the permissions
-                    ActivityCompat.requestPermissions(this,
-                            new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                            MY_PERMISSIONS_ACCESS_LOCATION);
-
-                } else {
-                    // Show user dialog to grant permission to record audio
-                    ActivityCompat.requestPermissions(this,
-                            new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                            MY_PERMISSIONS_ACCESS_LOCATION);
-                }
-            }
-            //If permission is granted, then go ahead recording audio
-            else if (ContextCompat.checkSelfPermission(this,
-                    Manifest.permission.ACCESS_FINE_LOCATION)
-                    == PackageManager.PERMISSION_GRANTED) {
-
-                //recordLocation();
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_ACCESS_LOCATION);
             }
         } catch (Exception e) {
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Location request error " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
     protected void requestMicrophonePermissions() {
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.RECORD_AUDIO)
-                != PackageManager.PERMISSION_GRANTED) {
+        try {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, MY_PERMISSIONS_RECORD_AUDIO);
 
-            //When permission is not granted by user, show them message why this permission is needed.
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.RECORD_AUDIO)) {
-                Toast.makeText(this, "Prosím, povolte využití mikrofonu.", Toast.LENGTH_LONG).show();
-
-                //Give user option to still opt-in the permissions
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.RECORD_AUDIO},
-                        MY_PERMISSIONS_RECORD_AUDIO);
-
-            } else {
-                // Show user dialog to grant permission to record audio
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.RECORD_AUDIO},
-                        MY_PERMISSIONS_RECORD_AUDIO);
             }
-        }
-        //If permission is granted, then go ahead recording audio
-        else if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.RECORD_AUDIO)
-                == PackageManager.PERMISSION_GRANTED) {
-
-            //recordAudio();
-        } else {
-            // Show user dialog to grant permission to record audio
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.RECORD_AUDIO},
-                    MY_PERMISSIONS_RECORD_AUDIO);
+        } catch (Exception e) {
+            Toast.makeText(this, "Microphone request error " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -189,28 +117,31 @@ public class MainActivity extends AppCompatActivity {
         Log.v("onRequestPermissionsResult", "grantResults: " + Arrays.toString(grantResults));
         switch (requestCode) {
             case MY_PERMISSIONS_RECORD_AUDIO: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (permissionsRequests[MY_PERMISSIONS_RECORD_AUDIO - 1]++ == 0) {
+                    if (!(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED))
+                        Toast.makeText(this, "Bez záznamu hlasitosti nebude měření fungovat.", Toast.LENGTH_LONG).show();
                 } else {
-                    Toast.makeText(this, "Zakázáno používat mikrofon.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Nelze opakovaně žádat o stejná oprávnění. Prosím, povolte oprávnění v nastevení telefonu.", Toast.LENGTH_LONG).show();
                 }
-                return;
+                break;
             }
             case MY_PERMISSIONS_ACCESS_LOCATION: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (permissionsRequests[MY_PERMISSIONS_ACCESS_LOCATION - 1]++ == 0) {
+                    if (!(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED))
+                        Toast.makeText(this, "Bez přesné polohy nebude měření fungovat.", Toast.LENGTH_LONG).show();
                 } else {
-                    Toast.makeText(this, "Zakázano používat přesnou polohu.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Nelze opakovaně žádat o stejná oprávnění. Prosím, povolte oprávnění v nastevení telefonu.", Toast.LENGTH_LONG).show();
                 }
-                return;
+                break;
             }
             case MY_PERMISSIONS_EXTERNAL_STORAGE: {
-                if (grantResults.length > 0
-                        && grantResults[1] == PackageManager.PERMISSION_GRANTED
-                        && grantResults[2] == PackageManager.PERMISSION_GRANTED) {
-                    // TODO: index 0 - manage nepovolen, 1 a 2 read a write povoleny - proč?
+                if (permissionsRequests[MY_PERMISSIONS_EXTERNAL_STORAGE - 1]++ == 0) {
+                    if (!(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED))
+                        Toast.makeText(this, "Bez použití externího úložiště budou data ukládána v paměti telefonu.", Toast.LENGTH_LONG).show();
                 } else {
-                    Toast.makeText(this, "Zakázáno používat externí úložiště.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Nelze opakovaně žádat o stejná oprávnění. Prosím, povolte oprávnění v nastevení telefonu.", Toast.LENGTH_LONG).show();
                 }
-                return;
+                break;
             }
         }
     }
@@ -259,16 +190,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void onOffSwitchClickListener(Switch v) {
+        if (locationManager == null) {
+            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        }
+        if (locationListener == null) {
+            locationListener = new LocationChangeListener(this, this);
+        }
         if(v.isChecked()) {
             try {
                 if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                         && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                     if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
-                        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTimeMs, minDistanceM, locationListener);
+                        if ((ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+                                && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTimeMs, minDistanceM, locationListener);
+                            return;
+                        }
                     }
                 }
+                Toast.makeText(this, "Nejsou povolena všechna oprávnění.", Toast.LENGTH_LONG).show();
+                v.setChecked(false);
             } catch (Exception e) {
                 Toast.makeText(this, "Error switch" + e.getMessage(), Toast.LENGTH_LONG).show();
+                v.setChecked(false);
             }
         } else {
             // Odregistrace updatů lokace
@@ -281,6 +225,35 @@ public class MainActivity extends AppCompatActivity {
             editor.apply();
             // Kontrola a odstranění osamocených data pointů
             dm.deleteSoloDataPoints();
+        }
+    }
+
+    public void checkPermissionButtons() {
+        Button locationButton = findViewById(R.id.location_permission);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            locationButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_save));
+            locationButton.setClickable(false);
+        } else {
+            locationButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_deny));
+            locationButton.setClickable(true);
+        }
+        Button microphoneButton = findViewById(R.id.microphone_permission);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+            microphoneButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_save));
+            microphoneButton.setClickable(false);
+        } else {
+            microphoneButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_deny));
+            microphoneButton.setClickable(true);
+        }
+        Button storageButton = findViewById(R.id.storage_permission);
+        if ((ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+            storageButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_save));
+            storageButton.setClickable(false);
+        } else {
+            storageButton.setBackground(ContextCompat.getDrawable(this, R.drawable.button_deny));
+            storageButton.setClickable(true);
         }
     }
 }

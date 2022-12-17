@@ -19,6 +19,7 @@
         android:background="@drawable/black_border" />
 
     <RadioGroup
+        android:id="@+id/radio_group"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -35,7 +36,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
-            android:onClick="onRadioButtonClicked"
             android:checked="true"
             android:text="Otevřít" />
 
@@ -48,7 +48,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
-            android:onClick="onRadioButtonClicked"
             android:text="Odeslat" />
 
         <RadioButton
@@ -59,7 +58,6 @@
             android:button="@null"
             android:drawableBottom="@android:drawable/btn_radio"
             android:gravity="center"
-            android:onClick="onRadioButtonClicked"
             android:text="Smazat" />
     </RadioGroup>
 

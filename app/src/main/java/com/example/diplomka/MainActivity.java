@@ -16,6 +16,8 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Switch;
 import android.widget.Toast;
 
@@ -222,8 +224,19 @@ public class MainActivity extends AppCompatActivity {
 
         dataWindow.setOnItemClickListener((adapterView, view, position, l) -> {
             String value = adapter.getItem(position);
-            if (Integer.parseInt(value.split("\\)")[0]) != session) {
-                openMapIntent(value);
+            int sessionOfItem = Integer.parseInt(value.split("\\)")[0]);
+            if (sessionOfItem != session) {
+                RadioButton open = findViewById(R.id.radio_open);
+                RadioButton send = findViewById(R.id.radio_send);
+                RadioButton delete = findViewById(R.id.radio_delete);
+                if (open.isChecked()) {
+                    openMapIntent(value);
+                } else if (send.isChecked()) {
+                    sendDataPointsToServer(sessionOfItem);
+                } else if (delete.isChecked()) {
+                    dm.deleteDataPointsBySession(sessionOfItem);
+                    showData(dm);
+                }
             } else {
                 Toast.makeText(this, "Nelze rozkliknout právě probíhající měření.", Toast.LENGTH_LONG).show();
             }
@@ -236,6 +249,10 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    private void sendDataPointsToServer(int sessionOfItem) {
+        Toast.makeText(this, "Není naimplementováno.", Toast.LENGTH_LONG).show();
+    }
+
     private void infoButtonClickListener() {
         Intent intent = new Intent(this, InfoActivity.class);
         startActivity(intent);
@@ -243,7 +260,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void onOffSwitchClickListener(Switch v) {
         if(v.isChecked()) {
-            //Check if GPS is enabled or not
             try {
                 if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                         && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {

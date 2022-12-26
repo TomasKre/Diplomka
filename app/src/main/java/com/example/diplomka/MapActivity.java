@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -24,11 +25,14 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.diplomka.databinding.ActivityMapBinding;
+import com.google.android.gms.maps.model.PatternItem;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -40,6 +44,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private String msg;
     private List<DataPoint> dataPoints;
     private List<StreetData> dataStreets;
+    private List<Polyline> polylineList;
+    private List<DataPoint> markers;
     private int allPaths = 0;
     private int greenPaths = 0;
     private Context ctx;
@@ -73,6 +79,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         int session = Integer.parseInt(msg.split("\\)")[0]);
         dataPoints = dm.getDataPoints(session);
         dataStreets = dm.getStreetData(session);
+        polylineList = new ArrayList<>();
+        markers = new ArrayList<>();
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -92,17 +100,18 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+        googleMap.setOnMapLongClickListener(latLng -> onMapLongClick(latLng));
+
         LatLng lastPosition = null;
         Long lastDatetimeMillis = (long) 0;
         int lastId = 0;
         int lastPart = 0;
-        int i = 0;
         int id_from = 0;
         int part = 1;
+        DataPoint lastDataPoint = null;
         // Případně color ve tvaru int 0xAARRGGBB
         PolylineOptions polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.denied));
 
-        //TODO: nepovolit zadávat data, pokud ještě probíhá sběr
         if (dataStreets.size() > 0) {
             for (DataPoint dataPoint : dataPoints) {
                 if (lastPosition != null) {
@@ -118,29 +127,35 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                                     }
                                     allPaths++;
                                     Polyline polyline = googleMap.addPolyline(polylineOptions);
+                                    polylineList.add(polyline);
                                     polylineOptions = new PolylineOptions().clickable(true)
                                             .color(ContextCompat.getColor(this, R.color.denied));
                                     polylineOptions.add(position);
                                     mMap.addMarker(new MarkerOptions().position(position)
                                             .title(getHumanDate(dataPoint.dt)));
+                                    markers.add(dataPoint);
                                 }
                             }
                             lastPart = dataPoint.part;
                         }
                     } else {
                         Polyline polyline = googleMap.addPolyline(polylineOptions);
+                        polylineList.add(polyline);
                         polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.denied));
                         polylineOptions.add(position);
                         mMap.addMarker(new MarkerOptions().position(position).title(getHumanDate(dataPoint.dt)));
+                        markers.add(dataPoint);
                         allPaths++;
                     }
                 } else {
                     LatLng position = new LatLng(dataPoint.lat, dataPoint.lon);
                     polylineOptions.add(position);
                     mMap.addMarker(new MarkerOptions().position(position).title(getHumanDate(dataPoint.dt)));
+                    markers.add(dataPoint);
                 }
                 lastPosition = new LatLng(dataPoint.lat, dataPoint.lon);
                 lastDatetimeMillis = dataPoint.dt;
+                lastDataPoint = dataPoint;
             }
             for (StreetData dataStreet : dataStreets) {
                 if (dataStreet.part == lastPart) {
@@ -150,10 +165,12 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     }
                     allPaths++;
                     Polyline polyline = googleMap.addPolyline(polylineOptions);
+                    polylineList.add(polyline);
                     polylineOptions = new PolylineOptions().clickable(true)
                             .color(ContextCompat.getColor(this, R.color.denied));
                     mMap.addMarker(new MarkerOptions().position(lastPosition)
                             .title(getHumanDate(lastDatetimeMillis)));
+                    markers.add(lastDataPoint);
                 }
             }
         } else {
@@ -168,6 +185,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                         if (meters >= maxDistanceM) {
                             meters = 0;
                             Polyline polyline = googleMap.addPolyline(polylineOptions);
+                            polylineList.add(polyline);
                             dm.addStreetData(id_from, dataPoint.id, part++, 0, 0,
                                     0, 0, 0);
                             id_from = dataPoint.id;
@@ -175,17 +193,20 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                             polylineOptions.add(position);
                             allPaths++;
                             mMap.addMarker(new MarkerOptions().position(position).title(getHumanDate(dataPoint.dt)));
+                            markers.add(dataPoint);
                         }
                         dm.updateDataPoints(dataPoint.id, part);
                     } else {
                         meters = 0;
                         Polyline polyline = googleMap.addPolyline(polylineOptions);
+                        polylineList.add(polyline);
                         dm.addStreetData(id_from, dataPoint.id, part++, 0, 0,
                                 0, 0, 0);
                         id_from = dataPoint.id;
                         polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.denied));
                         allPaths++;
                         mMap.addMarker(new MarkerOptions().position(position).title(getHumanDate(dataPoint.dt)));
+                        markers.add(dataPoint);
                         dm.updateDataPoints(dataPoint.id, part);
                     }
                 } else {
@@ -194,17 +215,21 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     LatLng position = new LatLng(dataPoint.lat, dataPoint.lon);
                     polylineOptions.add(position);
                     mMap.addMarker(new MarkerOptions().position(position).title(getHumanDate(dataPoint.dt)));
+                    markers.add(dataPoint);
                 }
                 lastPosition = new LatLng(dataPoint.lat, dataPoint.lon);
                 lastDatetimeMillis = dataPoint.dt;
                 lastId = dataPoint.id;
+                lastDataPoint = dataPoint;
             }
             if (meters > 0) {
                 Polyline polyline = googleMap.addPolyline(polylineOptions);
+                polylineList.add(polyline);
                 dm.addStreetData(id_from, lastId, part, 0, 0,
                         0, 0, 0);
                 allPaths++;
                 mMap.addMarker(new MarkerOptions().position(lastPosition).title(getHumanDate(lastDatetimeMillis)));
+                markers.add(lastDataPoint);
             }
         }
 
@@ -221,6 +246,58 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         // Set listeners for click events.
         googleMap.setOnPolylineClickListener(this);
+    }
+
+    //@Override
+    public void onMapLongClick(LatLng clickedLatLng) {
+        // Iterate through the list of polylines and find the one that is closest to the long press location
+        double minDistanceLines = Double.MAX_VALUE;
+        double minDistancePoints;
+        Polyline closestPolyline = null;
+        LatLng nearestPoint = null;
+        LatLng nearestPointLine = null;
+        for (Polyline polyline : polylineList) {
+            minDistancePoints = Double.MAX_VALUE;
+            for (LatLng point : polyline.getPoints()) {
+                double distancePoints = getDistanceInMeters(clickedLatLng, point);
+                if (distancePoints < minDistancePoints) {
+                    nearestPoint = point;
+                    minDistancePoints = distancePoints;
+                }
+            }
+            double distanceLines = getDistanceInMeters(clickedLatLng, nearestPoint);
+            if (distanceLines < minDistanceLines) {
+                minDistanceLines = distanceLines;
+                closestPolyline = polyline;
+                nearestPointLine = nearestPoint;
+            }
+        }
+        if (closestPolyline != null) {
+            boolean isMarkered = false;
+            //Možný update přidat k datapointům info jestli je v nich marker? Místo 2 forů
+            for (DataPoint marker : markers) {
+                if (nearestPointLine.latitude == marker.lat && nearestPointLine.longitude == marker.lon) {
+                    isMarkered = true;
+                    break;
+                }
+            }
+            int part;
+            if (!isMarkered) {
+                for (DataPoint dataPoint : dataPoints) {
+                    if (nearestPointLine.latitude == dataPoint.lat && nearestPointLine.longitude == dataPoint.lon) {
+                        mMap.addMarker(new MarkerOptions().position(nearestPointLine).title(getHumanDate(dataPoint.dt)));
+                        part = dataPoint.part;
+                        break;
+                    }
+                }
+            }
+            //TODO: rozdělit polyline
+            Toast.makeText(this, "Polyline bude rozdělena v bodě " + nearestPointLine.latitude
+                    + " " + nearestPointLine.longitude, Toast.LENGTH_LONG).show();
+            List<PatternItem> patternItems = new ArrayList<>();
+            patternItems.add(new PatternItem(1, 1.0F));
+            closestPolyline.setPattern(patternItems);
+        }
     }
 
     @Override
@@ -342,6 +419,18 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         double lonDistance = Math.toRadians(lon2 - lon1);
         double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
                 + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c * 1000; // convert to meters
+    }
+
+    public static double getDistanceInMeters(LatLng point1, LatLng point2) {
+        double R = 6371.01; // Radius of the earth
+
+        double latDistance = Math.toRadians(point2.latitude - point1.latitude);
+        double lonDistance = Math.toRadians(point2.longitude - point1.longitude);
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(point1.latitude)) * Math.cos(Math.toRadians(point2.latitude))
                 * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c * 1000; // convert to meters

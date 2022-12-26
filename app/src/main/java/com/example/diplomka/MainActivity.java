@@ -45,10 +45,11 @@ public class MainActivity extends AppCompatActivity {
         session = sharedPreferences.getInt("session", 0);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putInt("session", ++session);
-        editor.apply();// TODO: odmazat?
+        editor.apply();// TODO: odmazat? nebo pouze
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        // TODO: Dialog na smazání a odeslání dat měření
 
         permissionsRequests = new int[3]; // TODO: upravit aby se nastavovalo na 0 při zapnutí aplikace pokud jsou perms -1
 

@@ -3,6 +3,7 @@ package com.example.diplomka;
 public class StreetData {
 
     public int id;
+    public int session;
     public int from;
     public int to;
     public int part;
@@ -12,9 +13,10 @@ public class StreetData {
     public int comfort;
     public boolean isInput;
 
-    public StreetData(int id, int from, int to, int part, int sidewalk, int sidewalk_width,
+    public StreetData(int id, int session, int from, int to, int part, int sidewalk, int sidewalk_width,
                       int green, int comfort, boolean isInput) {
         this.id = id;
+        this.session = session;
         this.from = from;
         this.to = to;
         this.part = part;
@@ -25,9 +27,10 @@ public class StreetData {
         this.isInput = isInput;
     }
 
-    public StreetData(int from, int to, int part, int sidewalk, int sidewalk_width, int green,
+    public StreetData(int session, int from, int to, int part, int sidewalk, int sidewalk_width, int green,
                       int comfort, boolean isInput) {
         this.id = 0;
+        this.session = session;
         this.from = from;
         this.to = to;
         this.part = part;

@@ -8,6 +8,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -42,8 +43,8 @@ public class MainActivity extends AppCompatActivity {
 
     public int session;
     private DataModel dm;
-    private int minTimeMs = 2500;
-    private int minDistanceM = 5;
+    private final int minTimeMs = 2500;
+    private final int minDistanceM = 5;
     private int[] permissionsRequests;
 
     ListView dataWindow;
@@ -70,7 +71,6 @@ public class MainActivity extends AppCompatActivity {
         dataWindow = findViewById(R.id.data_window);
 
         dm = new DataModel(this);
-        dm.deleteSoloDataPoints();
 
         checkPermissionButtons();
         locationButton.setOnClickListener(v -> requestLocationPermission());
@@ -79,9 +79,6 @@ public class MainActivity extends AppCompatActivity {
         infoButton.setOnClickListener(v -> infoButtonClickListener());
         onOffSwitch.setOnClickListener(v -> onOffSwitchClickListener((Switch) v));
         showData(dm);
-
-        dm.updateDataPoints(74, 6);
-        dm.updateDataPoints(75, 6);
     }
 
     private final int MY_PERMISSIONS_EXTERNAL_STORAGE = 3;
@@ -179,6 +176,7 @@ public class MainActivity extends AppCompatActivity {
                     sendDataPointsToServer(sessionOfItem);
                 } else if (delete.isChecked()) {
                     dm.deleteDataPointsBySession(sessionOfItem);
+                    dm.deleteStreetDataBySession(sessionOfItem);
                     showData(dm);
                 }
             } else {
@@ -202,6 +200,7 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    @SuppressLint("MissingPermission")
     private void onOffSwitchClickListener(Switch v) {
         if (locationManager == null) {
             locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -251,14 +250,14 @@ public class MainActivity extends AppCompatActivity {
                                 lastPosition.longitude, dataPoint.lon);
                         if (meters >= maxDistanceM) {
                             meters = 0;
-                            dm.addStreetData(id_from, dataPoint.id, part++, 0, 0,
+                            dm.addStreetData(session, id_from, dataPoint.id, part++, 0, 0,
                                     0, 0, 0);
                             id_from = dataPoint.id;
                         }
                         dm.updateDataPoints(dataPoint.id, part);
                     } else {
                         meters = 0;
-                        dm.addStreetData(id_from, dataPoint.id, part++, 0, 0,
+                        dm.addStreetData(session, id_from, dataPoint.id, part++, 0, 0,
                                 0, 0, 0);
                         id_from = dataPoint.id;
                         dm.updateDataPoints(dataPoint.id, part);
@@ -272,7 +271,7 @@ public class MainActivity extends AppCompatActivity {
                 lastId = dataPoint.id;
             }
             if (meters > 0) {
-                dm.addStreetData(id_from, lastId, part, 0, 0,
+                dm.addStreetData(session, id_from, lastId, part, 0, 0,
                         0, 0, 0);
             }
             // Inkrement session

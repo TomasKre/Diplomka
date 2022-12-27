@@ -15,7 +15,7 @@ import java.util.Date;
 
 public class DataModel extends SQLiteOpenHelper {
     protected static final String DB_NAME = "dbStreetData";
-    protected static final int DB_VERSION = 4;
+    protected static final int DB_VERSION = 5;
 
     public static final String ATR_ID = "id";
     public static final String ATR_PART = "part";
@@ -56,6 +56,7 @@ public class DataModel extends SQLiteOpenHelper {
 
         query = "CREATE TABLE " + TBL_NAME_STREETS + " (" +
                 ATR_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                ATR_SESSION + " INTEGER, " +
                 ATR_FROM + " INTEGER, " +
                 ATR_TO + " INTEGER, " +
                 ATR_PART + " INTEGER, " +
@@ -65,7 +66,6 @@ public class DataModel extends SQLiteOpenHelper {
                 ATR_COMFORT + " INTEGER, " +
                 ATR_INPUT + " INTEGER)";
         db.execSQL(query);
-        db.close();
     }
 
     @Override
@@ -76,7 +76,6 @@ public class DataModel extends SQLiteOpenHelper {
         query = "DROP TABLE IF EXISTS " + TBL_NAME_STREETS;
         db.execSQL(query);
         onCreate(db);
-        db.close();
     }
 
     //---------------DATA POINTS--------------------------------------
@@ -92,15 +91,11 @@ public class DataModel extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
         db.insert(TBL_NAME_POINTS,null, values);
-        db.close();
     }
 
     public long getDataPointsCount() {
         SQLiteDatabase db = this.getReadableDatabase();
-
         long count = DatabaseUtils.queryNumEntries(db, TBL_NAME_POINTS);
-
-        db.close();
         return count;
     }
 
@@ -122,7 +117,6 @@ public class DataModel extends SQLiteOpenHelper {
         }
 
         cursor.close();
-        db.close();
         return dataArrayList;
     }
 
@@ -144,7 +138,6 @@ public class DataModel extends SQLiteOpenHelper {
         }
 
         cursor.close();
-        db.close();
         return dataArrayList;
     }
 
@@ -167,7 +160,6 @@ public class DataModel extends SQLiteOpenHelper {
         }
 
         cursor.close();
-        db.close();
         return dataArrayList;
     }
 
@@ -192,7 +184,6 @@ public class DataModel extends SQLiteOpenHelper {
         }
 
         cursor.close();
-        db.close();
         return dataArrayList;
     }
 
@@ -216,7 +207,6 @@ public class DataModel extends SQLiteOpenHelper {
         }
 
         cursor.close();
-        db.close();
         return dataArrayList;
     }
 
@@ -226,7 +216,6 @@ public class DataModel extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
         db.update(TBL_NAME_POINTS, values, "id=?",new String[]{Integer.toString(id)});
-        db.close();
     }
 
     public void updateSplitDataPoints(int session, long dt, int part, int newPart) {
@@ -239,13 +228,11 @@ public class DataModel extends SQLiteOpenHelper {
                 " FROM " + TBL_NAME_POINTS + " WHERE " + ATR_SESSION + "=? AND " + ATR_TS + ">=? AND " +
                 ATR_PART + "=?)",
                 new String[]{Integer.toString(session), Long.toString(dt), Integer.toString(part)});
-        db.close();
     }
 
     public void deleteDataPoints() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + TBL_NAME_POINTS);
-        db.close();
     }
 
     public void deleteSoloDataPoints() {
@@ -253,26 +240,23 @@ public class DataModel extends SQLiteOpenHelper {
         db.execSQL("DELETE FROM " + TBL_NAME_POINTS + " WHERE " + ATR_SESSION + " IN( SELECT " +
                 ATR_SESSION + " FROM " + TBL_NAME_POINTS + " GROUP BY " + ATR_SESSION +
                 " HAVING COUNT(*) == 1 )");
-        db.close();
     }
 
     public void deleteDataPointsById(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + TBL_NAME_POINTS + " WHERE " + ATR_ID +
                  " = " + id);
-        db.close();
     }
 
     public void deleteDataPointsBySession(int session) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + TBL_NAME_POINTS + " WHERE " + ATR_SESSION +
                 " = " + session);
-        db.close();
     }
 
     //--------------------STREET DATA------------------------------------
 
-    public void addStreetData(int from, int to, int part, int sidewalk, int sidewalk_width,
+    public void addStreetData( int session, int from, int to, int part, int sidewalk, int sidewalk_width,
                               int green, int comfort, int input) {
         ContentValues values = new ContentValues();
         values.put(ATR_FROM, from);
@@ -283,6 +267,7 @@ public class DataModel extends SQLiteOpenHelper {
         values.put(ATR_GREEN, green);
         values.put(ATR_COMFORT, comfort);
         values.put(ATR_INPUT, input);
+        values.put(ATR_SESSION, session);
 
         SQLiteDatabase db = this.getWritableDatabase();
         db.insert(TBL_NAME_STREETS,null, values);
@@ -293,14 +278,13 @@ public class DataModel extends SQLiteOpenHelper {
 
         long count = DatabaseUtils.queryNumEntries(db, TBL_NAME_STREETS);
 
-        db.close();
         return count;
     }
 
     public ArrayList<StreetData> getStreetData() {
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Cursor cursor = db.rawQuery("SELECT " + ATR_ID + ", " + ATR_FROM + ", " + ATR_TO +
+        Cursor cursor = db.rawQuery("SELECT " + ATR_ID + ", " + ATR_SESSION + ", " + ATR_FROM + ", " + ATR_TO +
                 ", " + ATR_PART + ", " + ATR_SIDEWALK + "," + ATR_SIDEWALK_WIDTH + ", " +
                 ATR_GREEN + ", " + ATR_COMFORT + ", " + ATR_INPUT + " FROM " + TBL_NAME_STREETS, null);
         ArrayList<StreetData> dataArrayList = new ArrayList<>();
@@ -311,19 +295,18 @@ public class DataModel extends SQLiteOpenHelper {
                         cursor.getInt(2), cursor.getInt(3),
                         cursor.getInt(4), cursor.getInt(5),
                         cursor.getInt(6), cursor.getInt(7),
-                        (cursor.getInt(8)) == 1));
+                        cursor.getInt(8), (cursor.getInt(9)) == 1));
             } while (cursor.moveToNext());
         }
 
         cursor.close();
-        db.close();
         return dataArrayList;
     }
 
     public ArrayList<StreetData> getStreetData(int session) {
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Cursor cursor = db.rawQuery("SELECT " + ATR_ID + ", " + ATR_FROM + ", " + ATR_TO +
+        Cursor cursor = db.rawQuery("SELECT " + ATR_ID + ", " + ATR_SESSION + ", " + ATR_FROM + ", " + ATR_TO +
                 ", " + ATR_PART + ", " + ATR_SIDEWALK + "," + ATR_SIDEWALK_WIDTH + ", " + ATR_GREEN
                 + ", " + ATR_COMFORT + ", " + ATR_INPUT + " FROM " + TBL_NAME_STREETS + " WHERE " + ATR_FROM +
                 " IN (SELECT " + ATR_ID + " FROM " + TBL_NAME_POINTS + " WHERE " + ATR_SESSION +
@@ -336,12 +319,11 @@ public class DataModel extends SQLiteOpenHelper {
                         cursor.getInt(2), cursor.getInt(3),
                         cursor.getInt(4), cursor.getInt(5),
                         cursor.getInt(6), cursor.getInt(7),
-                        (cursor.getInt(8)) == 1));
+                        cursor.getInt(8), (cursor.getInt(9)) == 1));
             } while (cursor.moveToNext());
         }
 
         cursor.close();
-        db.close();
         return dataArrayList;
     }
 
@@ -354,13 +336,12 @@ public class DataModel extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         db.update(TBL_NAME_STREETS, values, "point_from=? AND point_to=?",
                 new String[]{Integer.toString(from), Integer.toString(to)});
-        db.close();
     }
 
     public void updateSplitStreetData(int from_id, int part, int newPart) {
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Cursor cursor = db.rawQuery("SELECT " + ATR_ID + ", " + ATR_FROM + ", " + ATR_TO +
+        Cursor cursor = db.rawQuery("SELECT " + ATR_ID + ", " + ATR_SESSION + ", " + ATR_FROM + ", " + ATR_TO +
                 ", " + ATR_PART + ", " + ATR_SIDEWALK + "," + ATR_SIDEWALK_WIDTH + ", " +
                 ATR_GREEN + ", " + ATR_COMFORT + ", " + ATR_INPUT + " FROM " + TBL_NAME_STREETS +
                 " WHERE " + ATR_FROM + "<? AND " + ATR_TO + ">? AND " + ATR_PART + "=?",
@@ -373,11 +354,10 @@ public class DataModel extends SQLiteOpenHelper {
                         cursor.getInt(2), cursor.getInt(3),
                         cursor.getInt(4), cursor.getInt(5),
                         cursor.getInt(6), cursor.getInt(7),
-                        (cursor.getInt(8)) == 1));
+                        cursor.getInt(8), (cursor.getInt(9)) == 1));
             } while (cursor.moveToNext());
         }
         cursor.close();
-        db.close();
 
         if (dataArrayList.size() > 1) {
             Log.v("DataModel", "Error split street data");
@@ -394,6 +374,7 @@ public class DataModel extends SQLiteOpenHelper {
                 new String[]{Integer.toString(dataArrayList.get(0).id)});
 
         values = new ContentValues();
+        values.put(ATR_SESSION, dataArrayList.get(0).session);
         values.put(ATR_FROM, from_id);
         values.put(ATR_TO, dataArrayList.get(0).to);
         values.put(ATR_PART, newPart);
@@ -421,27 +402,23 @@ public class DataModel extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         db.update(TBL_NAME_STREETS, values, "point_from=? AND point_to=?",
                 new String[]{Integer.toString(from), Integer.toString(to)});
-        db.close();
     }
 
     public void deleteStreetData() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + TBL_NAME_STREETS);
-        db.close();
     }
 
     public void deleteStreetDataById(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DELETE FROM " + TBL_NAME_STREETS + " WHERE " + ATR_ID +
                 " = " + id);
-        db.close();
     }
 
     public void deleteStreetDataBySession(int session) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL("DELETE FROM " + TBL_NAME_STREETS + " WHERE " + ATR_ID +
+        db.execSQL("DELETE FROM " + TBL_NAME_STREETS + " WHERE " + ATR_SESSION +
                 " = " + session);
-        db.close();
     }
 }
 

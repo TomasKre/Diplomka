@@ -70,6 +70,9 @@ public class MainActivity extends AppCompatActivity {
         infoButton.setOnClickListener(v -> infoButtonClickListener());
         onOffSwitch.setOnClickListener(v -> onOffSwitchClickListener((Switch) v));
         showData(dm);
+
+        dm.updateDataPoints(74, 6);
+        dm.updateDataPoints(75, 6);
     }
 
     private final int MY_PERMISSIONS_EXTERNAL_STORAGE = 3;

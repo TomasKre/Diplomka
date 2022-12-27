@@ -46,9 +46,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private List<StreetData> dataStreets;
     private List<Polyline> polylineList;
     private List<DataPoint> markers;
+    private int maxPart;
     private int allPaths = 0;
     private int greenPaths = 0;
     private Context ctx;
+
 
     //mezi gps měřeními
     private static final int maxTimeMs = 300000;
@@ -81,6 +83,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         dataStreets = dm.getStreetData(session);
         polylineList = new ArrayList<>();
         markers = new ArrayList<>();
+        maxPart = 0;
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -131,6 +134,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                                     polylineOptions = new PolylineOptions().clickable(true)
                                             .color(ContextCompat.getColor(this, R.color.denied));
                                     polylineOptions.add(position);
+                                    if (dataPoint.part > maxPart)
+                                        maxPart = dataPoint.part;
                                     mMap.addMarker(new MarkerOptions().position(position)
                                             .title(getHumanDate(dataPoint.dt)));
                                     markers.add(dataPoint);
@@ -143,6 +148,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                         polylineList.add(polyline);
                         polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.denied));
                         polylineOptions.add(position);
+                        if (dataPoint.part > maxPart)
+                            maxPart = dataPoint.part;
                         mMap.addMarker(new MarkerOptions().position(position).title(getHumanDate(dataPoint.dt)));
                         markers.add(dataPoint);
                         allPaths++;
@@ -150,6 +157,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 } else {
                     LatLng position = new LatLng(dataPoint.lat, dataPoint.lon);
                     polylineOptions.add(position);
+                    if (dataPoint.part > maxPart)
+                        maxPart = dataPoint.part;
                     mMap.addMarker(new MarkerOptions().position(position).title(getHumanDate(dataPoint.dt)));
                     markers.add(dataPoint);
                 }
@@ -182,6 +191,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                         meters += getDistanceInMeters(lastPosition.latitude, dataPoint.lat,
                                 lastPosition.longitude, dataPoint.lon);
                         polylineOptions.add(position);
+                        if (dataPoint.part > maxPart)
+                            maxPart = dataPoint.part;
                         if (meters >= maxDistanceM) {
                             meters = 0;
                             Polyline polyline = googleMap.addPolyline(polylineOptions);
@@ -191,6 +202,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                             id_from = dataPoint.id;
                             polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.denied));
                             polylineOptions.add(position);
+                            if (dataPoint.part > maxPart)
+                                maxPart = dataPoint.part;
                             allPaths++;
                             mMap.addMarker(new MarkerOptions().position(position).title(getHumanDate(dataPoint.dt)));
                             markers.add(dataPoint);
@@ -214,6 +227,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     dm.updateDataPoints(dataPoint.id, part);
                     LatLng position = new LatLng(dataPoint.lat, dataPoint.lon);
                     polylineOptions.add(position);
+                    if (dataPoint.part > maxPart)
+                        maxPart = dataPoint.part;
                     mMap.addMarker(new MarkerOptions().position(position).title(getHumanDate(dataPoint.dt)));
                     markers.add(dataPoint);
                 }
@@ -281,22 +296,20 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     break;
                 }
             }
-            int part;
             if (!isMarkered) {
                 for (DataPoint dataPoint : dataPoints) {
                     if (nearestPointLine.latitude == dataPoint.lat && nearestPointLine.longitude == dataPoint.lon) {
                         mMap.addMarker(new MarkerOptions().position(nearestPointLine).title(getHumanDate(dataPoint.dt)));
-                        part = dataPoint.part;
+                        ++maxPart;
+                        dm.updateSplitStreetData(dataPoint.id, dataPoint.part, maxPart);
+                        dm.updateSplitDataPoints(dataPoint.session, dataPoint.dt, dataPoint.part, maxPart);
                         break;
+                        //TODO: rozdělit polyline jednoduché řešení je vše překreslit
                     }
                 }
+            } else {
+                Toast.makeText(this, "Zaznamenán long click na marker", Toast.LENGTH_LONG).show();
             }
-            //TODO: rozdělit polyline
-            Toast.makeText(this, "Polyline bude rozdělena v bodě " + nearestPointLine.latitude
-                    + " " + nearestPointLine.longitude, Toast.LENGTH_LONG).show();
-            List<PatternItem> patternItems = new ArrayList<>();
-            patternItems.add(new PatternItem(1, 1.0F));
-            closestPolyline.setPattern(patternItems);
         }
     }
 

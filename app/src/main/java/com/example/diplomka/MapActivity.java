@@ -51,7 +51,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private int greenPaths = 0;
     private Context ctx;
 
-
     //mezi gps měřeními
     private static final int maxTimeMs = 300000;
     private static final float maxDistanceM = 100;
@@ -114,136 +113,69 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         DataPoint lastDataPoint = null;
         // Případně color ve tvaru int 0xAARRGGBB
         PolylineOptions polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.denied));
-
-        if (dataStreets.size() > 0) {
-            for (DataPoint dataPoint : dataPoints) {
-                if (lastPosition != null) {
-                    LatLng position = new LatLng(dataPoint.lat, dataPoint.lon);
-                    if (dataPoint.dt - lastDatetimeMillis < maxTimeMs) {
-                        polylineOptions.add(position);
-                        if (dataPoint.part != lastPart) {
-                            for (StreetData dataStreet : dataStreets) {
-                                if (dataStreet.part == lastPart) {
-                                    if (dataStreet.isInput) {
-                                        polylineOptions.color(ContextCompat.getColor(ctx, R.color.accepted));
-                                        greenPaths++;
-                                    }
-                                    allPaths++;
-                                    Polyline polyline = googleMap.addPolyline(polylineOptions);
-                                    polylineList.add(polyline);
-                                    polylineOptions = new PolylineOptions().clickable(true)
-                                            .color(ContextCompat.getColor(this, R.color.denied));
-                                    polylineOptions.add(position);
-                                    if (dataPoint.part > maxPart)
-                                        maxPart = dataPoint.part;
-                                    mMap.addMarker(new MarkerOptions().position(position)
-                                            .title(getHumanDate(dataPoint.dt)));
-                                    markers.add(dataPoint);
+        for (DataPoint dataPoint : dataPoints) {
+            if (lastPosition != null) {
+                LatLng position = new LatLng(dataPoint.lat, dataPoint.lon);
+                if (dataPoint.dt - lastDatetimeMillis < maxTimeMs) {
+                    polylineOptions.add(position);
+                    if (dataPoint.part != lastPart) {
+                        for (StreetData dataStreet : dataStreets) {
+                            if (dataStreet.part == lastPart) {
+                                if (dataStreet.isInput) {
+                                    polylineOptions.color(ContextCompat.getColor(ctx, R.color.accepted));
+                                    greenPaths++;
                                 }
+                                allPaths++;
+                                Polyline polyline = googleMap.addPolyline(polylineOptions);
+                                polylineList.add(polyline);
+                                polylineOptions = new PolylineOptions().clickable(true)
+                                        .color(ContextCompat.getColor(this, R.color.denied));
+                                polylineOptions.add(position);
+                                if (dataPoint.part > maxPart)
+                                    maxPart = dataPoint.part;
+                                mMap.addMarker(new MarkerOptions().position(position)
+                                        .title(getHumanDate(dataPoint.dt)));
+                                markers.add(dataPoint);
                             }
-                            lastPart = dataPoint.part;
                         }
-                    } else {
-                        Polyline polyline = googleMap.addPolyline(polylineOptions);
-                        polylineList.add(polyline);
-                        polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.denied));
-                        polylineOptions.add(position);
-                        if (dataPoint.part > maxPart)
-                            maxPart = dataPoint.part;
-                        mMap.addMarker(new MarkerOptions().position(position).title(getHumanDate(dataPoint.dt)));
-                        markers.add(dataPoint);
-                        allPaths++;
+                        lastPart = dataPoint.part;
                     }
                 } else {
-                    LatLng position = new LatLng(dataPoint.lat, dataPoint.lon);
-                    polylineOptions.add(position);
-                    if (dataPoint.part > maxPart)
-                        maxPart = dataPoint.part;
-                    mMap.addMarker(new MarkerOptions().position(position).title(getHumanDate(dataPoint.dt)));
-                    markers.add(dataPoint);
-                }
-                lastPosition = new LatLng(dataPoint.lat, dataPoint.lon);
-                lastDatetimeMillis = dataPoint.dt;
-                lastDataPoint = dataPoint;
-            }
-            for (StreetData dataStreet : dataStreets) {
-                if (dataStreet.part == lastPart) {
-                    if (dataStreet.isInput) {
-                        polylineOptions.color(ContextCompat.getColor(ctx, R.color.accepted));
-                        greenPaths++;
-                    }
-                    allPaths++;
                     Polyline polyline = googleMap.addPolyline(polylineOptions);
                     polylineList.add(polyline);
-                    polylineOptions = new PolylineOptions().clickable(true)
-                            .color(ContextCompat.getColor(this, R.color.denied));
-                    mMap.addMarker(new MarkerOptions().position(lastPosition)
-                            .title(getHumanDate(lastDatetimeMillis)));
-                    markers.add(lastDataPoint);
-                }
-            }
-        } else {
-            double meters = 0.0;
-            for (DataPoint dataPoint : dataPoints) {
-                if(lastPosition != null) {
-                    LatLng position = new LatLng(dataPoint.lat, dataPoint.lon);
-                    if (dataPoint.dt - lastDatetimeMillis < maxTimeMs) {
-                        meters += getDistanceInMeters(lastPosition.latitude, dataPoint.lat,
-                                lastPosition.longitude, dataPoint.lon);
-                        polylineOptions.add(position);
-                        if (dataPoint.part > maxPart)
-                            maxPart = dataPoint.part;
-                        if (meters >= maxDistanceM) {
-                            meters = 0;
-                            Polyline polyline = googleMap.addPolyline(polylineOptions);
-                            polylineList.add(polyline);
-                            dm.addStreetData(id_from, dataPoint.id, part++, 0, 0,
-                                    0, 0, 0);
-                            id_from = dataPoint.id;
-                            polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.denied));
-                            polylineOptions.add(position);
-                            if (dataPoint.part > maxPart)
-                                maxPart = dataPoint.part;
-                            allPaths++;
-                            mMap.addMarker(new MarkerOptions().position(position).title(getHumanDate(dataPoint.dt)));
-                            markers.add(dataPoint);
-                        }
-                        dm.updateDataPoints(dataPoint.id, part);
-                    } else {
-                        meters = 0;
-                        Polyline polyline = googleMap.addPolyline(polylineOptions);
-                        polylineList.add(polyline);
-                        dm.addStreetData(id_from, dataPoint.id, part++, 0, 0,
-                                0, 0, 0);
-                        id_from = dataPoint.id;
-                        polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.denied));
-                        allPaths++;
-                        mMap.addMarker(new MarkerOptions().position(position).title(getHumanDate(dataPoint.dt)));
-                        markers.add(dataPoint);
-                        dm.updateDataPoints(dataPoint.id, part);
-                    }
-                } else {
-                    id_from = dataPoint.id;
-                    dm.updateDataPoints(dataPoint.id, part);
-                    LatLng position = new LatLng(dataPoint.lat, dataPoint.lon);
+                    polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.denied));
                     polylineOptions.add(position);
                     if (dataPoint.part > maxPart)
                         maxPart = dataPoint.part;
                     mMap.addMarker(new MarkerOptions().position(position).title(getHumanDate(dataPoint.dt)));
                     markers.add(dataPoint);
+                    allPaths++;
                 }
-                lastPosition = new LatLng(dataPoint.lat, dataPoint.lon);
-                lastDatetimeMillis = dataPoint.dt;
-                lastId = dataPoint.id;
-                lastDataPoint = dataPoint;
+            } else {
+                LatLng position = new LatLng(dataPoint.lat, dataPoint.lon);
+                polylineOptions.add(position);
+                if (dataPoint.part > maxPart)
+                    maxPart = dataPoint.part;
+                mMap.addMarker(new MarkerOptions().position(position).title(getHumanDate(dataPoint.dt)));
+                markers.add(dataPoint);
             }
-            if (meters > 0) {
+            lastPosition = new LatLng(dataPoint.lat, dataPoint.lon);
+            lastDatetimeMillis = dataPoint.dt;
+            lastDataPoint = dataPoint;
+        }
+        for (StreetData dataStreet : dataStreets) {
+            if (dataStreet.part == lastPart) {
+                if (dataStreet.isInput) {
+                    polylineOptions.color(ContextCompat.getColor(ctx, R.color.accepted));
+                    greenPaths++;
+                }
+                allPaths++;
                 Polyline polyline = googleMap.addPolyline(polylineOptions);
                 polylineList.add(polyline);
-                dm.addStreetData(id_from, lastId, part, 0, 0,
-                        0, 0, 0);
-                allPaths++;
-                mMap.addMarker(new MarkerOptions().position(lastPosition).title(getHumanDate(lastDatetimeMillis)));
+                polylineOptions = new PolylineOptions().clickable(true)
+                        .color(ContextCompat.getColor(this, R.color.denied));
+                mMap.addMarker(new MarkerOptions().position(lastPosition)
+                        .title(getHumanDate(lastDatetimeMillis)));
                 markers.add(lastDataPoint);
             }
         }
@@ -303,8 +235,39 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                         ++maxPart;
                         dm.updateSplitStreetData(dataPoint.id, dataPoint.part, maxPart);
                         dm.updateSplitDataPoints(dataPoint.session, dataPoint.dt, dataPoint.part, maxPart);
+                        List<LatLng> oldPoints = closestPolyline.getPoints();
+                        boolean isInput = false;
+                        PolylineOptions polylineOptions;
+                        if (closestPolyline.getColor() != ContextCompat.getColor(this, R.color.denied)) {
+                            isInput = true;
+                            polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.accepted));
+                            greenPaths++;
+                        } else {
+                            polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.denied));
+                        }
+                        allPaths++;
+
+                        // Algoritmus lze zjednodušit oproti onMapReady, jelikož podmínky času a vzdálenosti jsou již splněny
+                        Polyline polyline;
+                        for (LatLng oldPoint : oldPoints) {
+                            polylineOptions.add(oldPoint);
+                            if (oldPoint.latitude == nearestPoint.latitude && oldPoint.longitude == nearestPoint.longitude) {
+                                polyline = mMap.addPolyline(polylineOptions);
+                                polylineList.add(polyline);
+                                if (isInput) {
+                                    polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.accepted));
+                                } else {
+                                    polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.denied));
+                                }
+                                polylineOptions.add(oldPoint);
+                            }
+                        }
+                        polyline = mMap.addPolyline(polylineOptions);
+                        polylineList.add(polyline);
+                        polylineList.remove(closestPolyline);
+                        closestPolyline.remove();
+                        checkSendButton();
                         break;
-                        //TODO: rozdělit polyline jednoduché řešení je vše překreslit
                     }
                 }
             } else {

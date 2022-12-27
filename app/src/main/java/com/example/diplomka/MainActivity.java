@@ -1,5 +1,8 @@
 package com.example.diplomka;
 
+import static com.example.diplomka.MapActivity.getDistanceInMeters;
+import static com.example.diplomka.MapActivity.getHumanDate;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -23,8 +26,14 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import android.content.Intent;
+
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -221,14 +230,57 @@ public class MainActivity extends AppCompatActivity {
         } else {
             // Odregistrace updatů lokace
             locationManager.removeUpdates(locationListener);
+            // Kontrola a odstranění osamocených data pointů
+            dm.deleteSoloDataPoints();
+            // Nasekání cest
+            LatLng lastPosition = null;
+            Long lastDatetimeMillis = (long) 0;
+            int lastId = 0;
+            int id_from = 0;
+            int part = 1;
+            DataPoint lastDataPoint = null;
+            double meters = 0.0;
+            // čas a vzdálenost pro nasekání cest
+            final int maxTimeMs = 300000;
+            final float maxDistanceM = 100;
+            List<DataPoint> dataPoints = dm.getDataPoints(session);
+            for (DataPoint dataPoint : dataPoints) {
+                if(lastPosition != null) {
+                    if (dataPoint.dt - lastDatetimeMillis < maxTimeMs) {
+                        meters += getDistanceInMeters(lastPosition.latitude, dataPoint.lat,
+                                lastPosition.longitude, dataPoint.lon);
+                        if (meters >= maxDistanceM) {
+                            meters = 0;
+                            dm.addStreetData(id_from, dataPoint.id, part++, 0, 0,
+                                    0, 0, 0);
+                            id_from = dataPoint.id;
+                        }
+                        dm.updateDataPoints(dataPoint.id, part);
+                    } else {
+                        meters = 0;
+                        dm.addStreetData(id_from, dataPoint.id, part++, 0, 0,
+                                0, 0, 0);
+                        id_from = dataPoint.id;
+                        dm.updateDataPoints(dataPoint.id, part);
+                    }
+                } else {
+                    id_from = dataPoint.id;
+                    dm.updateDataPoints(dataPoint.id, part);
+                }
+                lastPosition = new LatLng(dataPoint.lat, dataPoint.lon);
+                lastDatetimeMillis = dataPoint.dt;
+                lastId = dataPoint.id;
+            }
+            if (meters > 0) {
+                dm.addStreetData(id_from, lastId, part, 0, 0,
+                        0, 0, 0);
+            }
             // Inkrement session
             SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("session_prefs", 0);
             session = sharedPreferences.getInt("session", 0);
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putInt("session", ++session);
             editor.apply();
-            // Kontrola a odstranění osamocených data pointů
-            dm.deleteSoloDataPoints();
         }
     }
 

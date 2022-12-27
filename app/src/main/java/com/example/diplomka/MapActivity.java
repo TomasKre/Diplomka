@@ -219,6 +219,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 nearestPointLine = nearestPoint;
             }
         }
+        if (minDistanceLines > 100.0F) {
+            Toast.makeText(this, "Zaznamenán long click dále než 100 m od nejbližšího bodu.", Toast.LENGTH_LONG).show();
+            return;
+        }
         if (closestPolyline != null) {
             boolean isMarkered = false;
             //Možný update přidat k datapointům info jestli je v nich marker? Místo 2 forů
@@ -232,6 +236,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 for (DataPoint dataPoint : dataPoints) {
                     if (nearestPointLine.latitude == dataPoint.lat && nearestPointLine.longitude == dataPoint.lon) {
                         mMap.addMarker(new MarkerOptions().position(nearestPointLine).title(getHumanDate(dataPoint.dt)));
+                        markers.add(dataPoint);
                         ++maxPart;
                         dm.updateSplitStreetData(dataPoint.id, dataPoint.part, maxPart);
                         dm.updateSplitDataPoints(dataPoint.session, dataPoint.dt, dataPoint.part, maxPart);
@@ -272,6 +277,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 }
             } else {
                 Toast.makeText(this, "Zaznamenán long click na marker", Toast.LENGTH_LONG).show();
+                return;
             }
         }
     }

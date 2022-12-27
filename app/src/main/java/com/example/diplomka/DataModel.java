@@ -131,9 +131,32 @@ public class DataModel extends SQLiteOpenHelper {
 
         Cursor cursor = db.rawQuery("SELECT " + ATR_ID + ", " + ATR_SESSION + ", " + ATR_TS +
                 ", " + ATR_LAT + "," + ATR_LON + ", " + ATR_NOISE + ", " + ATR_PART + " FROM " +
-                TBL_NAME_POINTS + " WHERE " + ATR_SESSION + " = " + session, null);
-        ArrayList<DataPoint> dataArrayList = new ArrayList<>();
+                TBL_NAME_POINTS + " WHERE " + ATR_SESSION + " =?", new String[]{Integer.toString(session)});
 
+        ArrayList<DataPoint> dataArrayList = new ArrayList<>();
+        if (cursor.moveToFirst()) {
+            do {
+                dataArrayList.add(new DataPoint(cursor.getInt(0), cursor.getInt(1),
+                        cursor.getLong(2), cursor.getFloat(3),
+                        cursor.getFloat(4), cursor.getFloat(5),
+                        cursor.getInt(6)));
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+        return dataArrayList;
+    }
+
+    public ArrayList<DataPoint> getDataPoints(int session, int part) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery("SELECT " + ATR_ID + ", " + ATR_SESSION + ", " + ATR_TS +
+                ", " + ATR_LAT + "," + ATR_LON + ", " + ATR_NOISE + ", " + ATR_PART + " FROM " +
+                TBL_NAME_POINTS + " WHERE " + ATR_SESSION + " =? AND " + ATR_PART + "=? ORDER BY " +
+                ATR_TS, new String[]{Integer.toString(session), Integer.toString(part)});
+
+        ArrayList<DataPoint> dataArrayList = new ArrayList<>();
         if (cursor.moveToFirst()) {
             do {
                 dataArrayList.add(new DataPoint(cursor.getInt(0), cursor.getInt(1),

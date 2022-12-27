@@ -42,6 +42,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private ActivityMapBinding binding;
     private DataModel dm;
     private String msg;
+    private int session;
     private List<DataPoint> dataPoints;
     private List<StreetData> dataStreets;
     private List<Polyline> polylineList;
@@ -77,7 +78,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             msg = (String) savedInstanceState.getSerializable("item");
         }
 
-        int session = Integer.parseInt(msg.split("\\)")[0]);
+        session = Integer.parseInt(msg.split("\\)")[0]);
         dataPoints = dm.getDataPoints(session);
         dataStreets = dm.getStreetData(session);
         polylineList = new ArrayList<>();
@@ -232,15 +233,21 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     break;
                 }
             }
+            // Pokud nejbližší bod longclicku nemá marker projdi body dané části a najdi, který je to bod
             if (!isMarkered) {
                 for (DataPoint dataPoint : dataPoints) {
                     if (nearestPointLine.latitude == dataPoint.lat && nearestPointLine.longitude == dataPoint.lon) {
+                        // Přidej marker
                         mMap.addMarker(new MarkerOptions().position(nearestPointLine).title(getHumanDate(dataPoint.dt)));
                         markers.add(dataPoint);
                         ++maxPart;
+
+                        // Načti body dané session a čášti, uprav na nové části
+                        List<DataPoint> oldPoints = dm.getDataPoints(session, dataPoint.part);
                         dm.updateSplitStreetData(dataPoint.id, dataPoint.part, maxPart);
                         dm.updateSplitDataPoints(dataPoint.session, dataPoint.dt, dataPoint.part, maxPart);
-                        List<LatLng> oldPoints = closestPolyline.getPoints();
+
+                        // Zjištění, zda byla čára user inputovaná
                         boolean isInput = false;
                         PolylineOptions polylineOptions;
                         if (closestPolyline.getColor() != ContextCompat.getColor(this, R.color.denied)) {
@@ -253,10 +260,14 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                         allPaths++;
 
                         // Algoritmus lze zjednodušit oproti onMapReady, jelikož podmínky času a vzdálenosti jsou již splněny
+                        // Projdi všechny body dané části a utvoř nové 2 polyline, starou odstraň
                         Polyline polyline;
-                        for (LatLng oldPoint : oldPoints) {
-                            polylineOptions.add(oldPoint);
-                            if (oldPoint.latitude == nearestPoint.latitude && oldPoint.longitude == nearestPoint.longitude) {
+                        List<LatLng> polylinePoints = closestPolyline.getPoints();
+                        for (DataPoint oldPoint : oldPoints) {
+                            LatLng latLng = new LatLng(oldPoint.lat, oldPoint.lon);
+                            polylinePoints.remove(latLng);
+                            polylineOptions.add(latLng);
+                            if (oldPoint.lat == nearestPoint.latitude && oldPoint.lon == nearestPoint.longitude) {
                                 polyline = mMap.addPolyline(polylineOptions);
                                 polylineList.add(polyline);
                                 if (isInput) {
@@ -264,9 +275,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                                 } else {
                                     polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.denied));
                                 }
-                                polylineOptions.add(oldPoint);
+                                polylineOptions.add(latLng);
                             }
                         }
+                        // Postupné odstraňování bodů staré polyline a poslední bod, který zůstal v listu by měl být ten poslední
+                        polylineOptions.add(polylinePoints.get(0));
                         polyline = mMap.addPolyline(polylineOptions);
                         polylineList.add(polyline);
                         polylineList.remove(closestPolyline);

@@ -9,7 +9,9 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.LocationListener;
@@ -173,11 +175,40 @@ public class MainActivity extends AppCompatActivity {
                 if (open.isChecked()) {
                     openMapIntent(value);
                 } else if (send.isChecked()) {
-                    sendDataPointsToServer(sessionOfItem);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setTitle("Odeslat data");
+                    builder.setMessage("Opravdu chcete odeslat záznamy s id " + sessionOfItem + "?");
+
+                    builder.setPositiveButton("Ano", (dialog, which) -> {
+                        sendDataPointsToServer(sessionOfItem);
+                        dm.deleteDataPointsBySession(sessionOfItem);
+                        dm.deleteStreetDataBySession(sessionOfItem);
+                        showData(dm);
+                        dialog.dismiss();
+                    });
+                    builder.setNegativeButton("Ne", (dialog, which) -> {
+                        // Do nothing
+                        dialog.dismiss();
+                    });
+                    AlertDialog alert = builder.create();
+                    alert.show();
                 } else if (delete.isChecked()) {
-                    dm.deleteDataPointsBySession(sessionOfItem);
-                    dm.deleteStreetDataBySession(sessionOfItem);
-                    showData(dm);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setTitle("Smazat záznam");
+                    builder.setMessage("Opravdu chcete smazat záznam " + sessionOfItem + "?");
+
+                    builder.setPositiveButton("Ano", (dialog, which) -> {
+                        dm.deleteDataPointsBySession(sessionOfItem);
+                        dm.deleteStreetDataBySession(sessionOfItem);
+                        showData(dm);
+                        dialog.dismiss();
+                    });
+                    builder.setNegativeButton("Ne", (dialog, which) -> {
+                        // Do nothing
+                        dialog.dismiss();
+                    });
+                    AlertDialog alert = builder.create();
+                    alert.show();
                 }
             } else {
                 Toast.makeText(this, "Nelze rozkliknout právě probíhající měření.", Toast.LENGTH_LONG).show();

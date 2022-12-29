@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
@@ -89,6 +90,27 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        Button send_button = findViewById(R.id.send_button);
+        send_button.setOnClickListener(v -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Odeslat data");
+            builder.setMessage("Opravdu chcete odeslat záznamy s id " + session + " včetně vyplněných dat?");
+
+            builder.setPositiveButton("Ano", (dialog, which) -> {
+                sendStreetDataAndDataPointsToServer(session);
+                //dm.deleteDataPointsBySession(session);
+                //dm.deleteStreetDataBySession(session);
+                dialog.dismiss();
+                finish();
+            });
+            builder.setNegativeButton("Ne", (dialog, which) -> {
+                // Do nothing
+                dialog.dismiss();
+            });
+            AlertDialog alert = builder.create();
+            alert.show();
+        });
     }
 
     /**
@@ -408,6 +430,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             send_button.setClickable(false);
             send_button.setBackground(ContextCompat.getDrawable(this, R.drawable.button_deny_border));
         }
+    }
+
+    private void sendStreetDataAndDataPointsToServer(int session) {
+        Toast.makeText(this, "Není naimplementováno.", Toast.LENGTH_LONG).show();
     }
 
     public static double getDistanceInMeters(double lat1, double lat2, double lon1, double lon2) {

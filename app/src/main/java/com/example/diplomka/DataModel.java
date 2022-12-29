@@ -385,7 +385,6 @@ public class DataModel extends SQLiteOpenHelper {
         values.put(ATR_INPUT, dataArrayList.get(0).isInput);
 
         dbw.insert(TBL_NAME_STREETS,null, values);
-        dbw.close();
     }
 
     public void updateStreetData(int from, int to, int sidewalk, int sidewalk_width,

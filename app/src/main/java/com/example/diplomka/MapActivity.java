@@ -146,6 +146,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     polylineList.add(polyline);
                     polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.denied));
                     polylineOptions.add(position);
+                    lastPart = dataPoint.part;
                     if (dataPoint.part > maxPart)
                         maxPart = dataPoint.part;
                     mMap.addMarker(new MarkerOptions().position(position).title(getHumanDate(dataPoint.dt)));
@@ -155,6 +156,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             } else {
                 LatLng position = new LatLng(dataPoint.lat, dataPoint.lon);
                 polylineOptions.add(position);
+                lastPart = dataPoint.part;
                 if (dataPoint.part > maxPart)
                     maxPart = dataPoint.part;
                 mMap.addMarker(new MarkerOptions().position(position).title(getHumanDate(dataPoint.dt)));
@@ -265,9 +267,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                         List<LatLng> polylinePoints = closestPolyline.getPoints();
                         for (DataPoint oldPoint : oldPoints) {
                             LatLng latLng = new LatLng(oldPoint.lat, oldPoint.lon);
-                            polylinePoints.remove(latLng);
+                            if (polylinePoints.size() > 1)
+                                polylinePoints.remove(latLng);
                             polylineOptions.add(latLng);
-                            if (oldPoint.lat == nearestPoint.latitude && oldPoint.lon == nearestPoint.longitude) {
+                            if (oldPoint.lat == nearestPointLine.latitude && oldPoint.lon == nearestPointLine.longitude) {
                                 polyline = mMap.addPolyline(polylineOptions);
                                 polylineList.add(polyline);
                                 if (isInput) {

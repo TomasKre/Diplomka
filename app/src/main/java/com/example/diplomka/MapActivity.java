@@ -6,6 +6,8 @@ import androidx.fragment.app.FragmentActivity;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.graphics.Point;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -19,6 +21,7 @@ import android.widget.PopupWindow;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -30,12 +33,25 @@ import com.google.android.gms.maps.model.PatternItem;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.DataOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnPolylineClickListener {
 
@@ -433,7 +449,53 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     }
 
     private void sendStreetDataAndDataPointsToServer(int session) {
-        Toast.makeText(this, "Není naimplementováno.", Toast.LENGTH_LONG).show();
+        ArrayList<DataPoint> points = dm.getDataPoints(session);
+        ArrayList<StreetData> streets = dm.getStreetData(session);
+        ArrayList<FullData> out = new ArrayList<>();
+
+        StreetData lastStreet = null;
+        for (DataPoint point:
+             points) {
+            int id = point.id;
+            Boolean last = false;
+            for (StreetData street:
+                 streets) {
+                if (id >= street.from && id <= street.to) {
+                    last = true;
+                    lastStreet = street;
+                    if (id < street.to) {
+                        out.add(new FullData(point.dt, point.lat, point.lon, point.noise, street.sidewalk,
+                                street.sidewalk_width, street.green, street.comfort));
+                        last = false;
+                        break;
+                    }
+                }
+            }
+            if (last) {
+                out.add(new FullData(point.dt, point.lat, point.lon, point.noise, lastStreet.sidewalk,
+                        lastStreet.sidewalk_width, lastStreet.green, lastStreet.comfort));
+            }
+        }
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+        String arrayToJson = "";
+        try {
+            arrayToJson = objectMapper.writeValueAsString(out);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        //HTTP http = new HTTP("http://localhost:5000/upload");
+        HTTP http = new HTTP("http://ulice.nti.tul.cz:5000/upload");
+        String result = http.sendData(arrayToJson);
+        if (result != "") {
+            Log.v("HTTP result", result);
+            Log.v("HTTP result", "Deleteing data session id: " + session);
+            dm.deleteStreetDataBySession(session);
+            dm.deleteDataPointsBySession(session);
+        }
     }
 
     public static double getDistanceInMeters(double lat1, double lat2, double lon1, double lon2) {

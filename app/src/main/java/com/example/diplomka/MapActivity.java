@@ -477,25 +477,30 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             }
         }
 
+        FullDataNamedArray finalJson = new FullDataNamedArray(out);
+
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 
         String arrayToJson = "";
         try {
-            arrayToJson = objectMapper.writeValueAsString(out);
+            arrayToJson = objectMapper.writeValueAsString(finalJson);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
 
         //HTTP http = new HTTP("http://localhost:5000/upload");
         HTTP http = new HTTP("http://ulice.nti.tul.cz:5000/upload");
-        String result = http.sendData(arrayToJson);
+        AsyncTask<String, Void, String> result = http.execute(arrayToJson);
+        Log.v("HTTP Async", result.getStatus().toString());
+        /*
         if (result != "") {
             Log.v("HTTP result", result);
-            Log.v("HTTP result", "Deleteing data session id: " + session);
-            dm.deleteStreetDataBySession(session);
-            dm.deleteDataPointsBySession(session);
+            Log.v("HTTP result", "Deleting data session id: " + session);
+            //dm.deleteStreetDataBySession(session);
+            //dm.deleteDataPointsBySession(session);
         }
+        */
     }
 
     public static double getDistanceInMeters(double lat1, double lat2, double lon1, double lon2) {

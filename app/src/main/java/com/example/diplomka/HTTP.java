@@ -72,10 +72,9 @@ public class HTTP extends AsyncTask<String, Void, String> {
                 } catch (Exception e) {
                     Log.v("HTTP", "Exception reading response");
                     Log.v("HTTP", e.getMessage());
-                } finally {
-                    conn.disconnect();
-                    return response.toString();
                 }
+                conn.disconnect();
+                return response.toString();
             }
             conn.disconnect();
         } catch (ProtocolException e) {

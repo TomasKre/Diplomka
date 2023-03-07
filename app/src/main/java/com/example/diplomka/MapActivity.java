@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Point;
@@ -14,8 +15,12 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.RotateAnimation;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.Spinner;
@@ -118,7 +123,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 //dm.deleteDataPointsBySession(session);
                 //dm.deleteStreetDataBySession(session);
                 dialog.dismiss();
-                finish();
+                createLoadingPopup();
+                //finish();
             });
             builder.setNegativeButton("Ne", (dialog, which) -> {
                 // Do nothing
@@ -331,7 +337,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 }
             } else {
                 Toast.makeText(this, "Zaznamenán long click na marker", Toast.LENGTH_LONG).show();
-                return;
             }
         }
     }
@@ -457,7 +462,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         for (DataPoint point:
              points) {
             int id = point.id;
-            Boolean last = false;
+            boolean last = false;
             for (StreetData street:
                  streets) {
                 if (id >= street.from && id <= street.to) {
@@ -489,18 +494,41 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             throw new RuntimeException(e);
         }
 
-        //HTTP http = new HTTP("http://localhost:5000/upload");
-        HTTP http = new HTTP("http://ulice.nti.tul.cz:5000/upload");
-        AsyncTask<String, Void, String> result = http.execute(arrayToJson);
-        Log.v("HTTP Async", result.getStatus().toString());
-        /*
-        if (result != "") {
+        //HTTP http = new HTTP("http://ulice.nti.tul.cz:5000/upload");
+        //AsyncTask<String, Void, String> result = http.execute(arrayToJson);
+        //Log.v("HTTP Async", result.getStatus().toString());
+
+        /*if (result != "") {
             Log.v("HTTP result", result);
             Log.v("HTTP result", "Deleting data session id: " + session);
             //dm.deleteStreetDataBySession(session);
             //dm.deleteDataPointsBySession(session);
-        }
-        */
+        }*/
+    }
+
+    public void createLoadingPopup() {
+        // inflate the layout of the popup window
+        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+        View popupAsyncView = inflater.inflate(R.layout.popup_async_task, null);
+        ImageView imageView = popupAsyncView.findViewById(R.id.image_progress); //Initialize ImageView via FindViewById or programatically
+
+        RotateAnimation anim = new RotateAnimation(0.0f, 360.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        // Setup anim with desired properties
+        anim.setInterpolator(new LinearInterpolator());
+        anim.setRepeatCount(Animation.INFINITE); // repeat animation indefinitely
+        anim.setDuration(1250); // animation cycle length in milliseconds
+
+        // Start animation
+        imageView.startAnimation(anim);
+        // Stop animation
+        //view.setAnimation(null)
+
+        // create the popup window
+        int width = LinearLayout.LayoutParams.WRAP_CONTENT;
+        int height = LinearLayout.LayoutParams.WRAP_CONTENT;
+        // focusable true by default
+        final PopupWindow popupWindow = new PopupWindow(popupAsyncView, width, height);
+        popupWindow.showAtLocation(popupAsyncView, Gravity.CENTER, 0, 0);
     }
 
     public static double getDistanceInMeters(double lat1, double lat2, double lon1, double lon2) {

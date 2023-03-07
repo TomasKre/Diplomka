@@ -61,7 +61,6 @@ public class MainActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        // TODO: Dialog na smazání a odeslání dat měření
 
         permissionsRequests = new int[3]; // TODO: upravit aby se nastavovalo na 0 při zapnutí aplikace pokud jsou perms -1
 
@@ -181,8 +180,8 @@ public class MainActivity extends AppCompatActivity {
 
                     builder.setPositiveButton("Ano", (dialog, which) -> {
                         sendDataPointsToServer(sessionOfItem);
-                        dm.deleteDataPointsBySession(sessionOfItem);
-                        dm.deleteStreetDataBySession(sessionOfItem);
+                        //dm.deleteDataPointsBySession(sessionOfItem);
+                        //dm.deleteStreetDataBySession(sessionOfItem);
                         showData(dm);
                         dialog.dismiss();
                     });
@@ -231,7 +230,7 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    @SuppressLint("MissingPermission")
+    @SuppressLint("MissingPermission") // permission v manifestu je, zřejmě nějaký bug, protože ze začátku se nezobrazovalo
     private void onOffSwitchClickListener(Switch v) {
         if (locationManager == null) {
             locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);

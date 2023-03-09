@@ -1,5 +1,6 @@
 package com.example.diplomka;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -17,9 +18,11 @@ import java.net.URL;
 
 
 public class HTTP extends AsyncTask<String, Void, String> {
-    URL url;
+    private URL url;
+    private MapActivity map;
 
-    public HTTP() {
+    public HTTP(MapActivity map) {
+        this.map = map;
         Log.v("HTTP", "HTTP initialized");
         try {
             this.url = new URL("http://ulice.nti.tul.cz:5000");
@@ -28,7 +31,8 @@ public class HTTP extends AsyncTask<String, Void, String> {
         }
     }
 
-    public HTTP(String url) {
+    public HTTP(MapActivity map, String url) {
+        this.map = map;
         Log.v("HTTP", "HTTP initialized with url");
         try {
             this.url = new URL(url);
@@ -59,34 +63,29 @@ public class HTTP extends AsyncTask<String, Void, String> {
             }
 
             int responseCode = conn.getResponseCode();
-
-            if (responseCode == 200) {
-                StringBuilder response = new StringBuilder();
-                try(BufferedReader br = new BufferedReader(
-                        new InputStreamReader(conn.getInputStream(), "utf-8"))) {
-                    String responseLine;
-                    while ((responseLine = br.readLine()) != null) {
-                        response.append(responseLine.trim());
-                    }
-                    Log.v("HTTP response", response.toString());
-                } catch (Exception e) {
-                    Log.v("HTTP", "Exception reading response");
-                    Log.v("HTTP", e.getMessage());
-                }
-                conn.disconnect();
-                return response.toString();
-            }
             conn.disconnect();
+            return Integer.toString(responseCode);
         } catch (ProtocolException e) {
             Log.v("HTTP", "ProtocolException");
             Log.v("HTTP", e.getMessage());
         } catch (IOException e) {
             Log.v("HTTP", "IOException");
             Log.v("HTTP", e.getMessage());
+            return "404";
         } catch (Exception e) {
             Log.v("HTTP", "Exception");
             Log.v("HTTP", e.getMessage());
         }
-        return "";
+        return "500";
+    }
+
+    @Override
+    protected void onPostExecute(String result) {
+        Log.v("HTTP result", result);
+        if (result == "200") {
+            map.finishLoadingPopup();
+        } else {
+            map.cancelLoadingPopup();
+        }
     }
 }

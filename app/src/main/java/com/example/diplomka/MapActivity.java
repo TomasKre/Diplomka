@@ -10,6 +10,7 @@ import android.content.Context;
 import android.graphics.Point;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -24,6 +25,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -47,12 +49,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.sql.Time;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -73,6 +77,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private int allPaths = 0;
     private int greenPaths = 0;
     private Context ctx;
+    private View popupAsyncView;
+    private PopupWindow popupAsyncWindow;
 
     //mezi gps měřeními
     private static final int maxTimeMs = 300000;
@@ -120,11 +126,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
             builder.setPositiveButton("Ano", (dialog, which) -> {
                 sendStreetDataAndDataPointsToServer(session);
-                //dm.deleteDataPointsBySession(session);
-                //dm.deleteStreetDataBySession(session);
                 dialog.dismiss();
                 createLoadingPopup();
-                //finish();
             });
             builder.setNegativeButton("Ne", (dialog, which) -> {
                 // Do nothing
@@ -494,22 +497,15 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             throw new RuntimeException(e);
         }
 
-        //HTTP http = new HTTP("http://ulice.nti.tul.cz:5000/upload");
-        //AsyncTask<String, Void, String> result = http.execute(arrayToJson);
-        //Log.v("HTTP Async", result.getStatus().toString());
-
-        /*if (result != "") {
-            Log.v("HTTP result", result);
-            Log.v("HTTP result", "Deleting data session id: " + session);
-            //dm.deleteStreetDataBySession(session);
-            //dm.deleteDataPointsBySession(session);
-        }*/
+        HTTP http = new HTTP(this,"http://ulice.nti.tul.cz:5000/upload");
+        AsyncTask<String, Void, String> result = http.execute(arrayToJson);
+        Log.v("HTTP Async", result.getStatus().toString());
     }
 
     public void createLoadingPopup() {
         // inflate the layout of the popup window
         LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
-        View popupAsyncView = inflater.inflate(R.layout.popup_async_task, null);
+        popupAsyncView = inflater.inflate(R.layout.popup_async_task, null);
         ImageView imageView = popupAsyncView.findViewById(R.id.image_progress); //Initialize ImageView via FindViewById or programatically
 
         RotateAnimation anim = new RotateAnimation(0.0f, 360.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
@@ -520,15 +516,50 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         // Start animation
         imageView.startAnimation(anim);
-        // Stop animation
-        //view.setAnimation(null)
 
         // create the popup window
         int width = LinearLayout.LayoutParams.WRAP_CONTENT;
         int height = LinearLayout.LayoutParams.WRAP_CONTENT;
         // focusable true by default
-        final PopupWindow popupWindow = new PopupWindow(popupAsyncView, width, height);
-        popupWindow.showAtLocation(popupAsyncView, Gravity.CENTER, 0, 0);
+        popupAsyncWindow = new PopupWindow(popupAsyncView, width, height);
+        popupAsyncWindow.showAtLocation(popupAsyncView, Gravity.CENTER, 0, 0);
+    }
+
+    public void finishLoadingPopup() {
+        ImageView imageView = popupAsyncView.findViewById(R.id.image_progress);
+        // Stop animation and change source image
+        imageView.setAnimation(null);
+        imageView.setImageResource(R.drawable.check_mark);
+
+        // Change info text
+        TextView textView = popupAsyncView.findViewById(R.id.info_text);
+        textView.setText("Odesláno, díky!");
+
+        popupAsyncWindow.dismiss();
+        dm.deleteDataPointsBySession(session);
+        dm.deleteStreetDataBySession(session);
+
+        Handler handler = new Handler();
+        handler.postDelayed(() -> {
+            popupAsyncWindow.dismiss();
+            finish();
+            }, 5000);
+    }
+
+    public void cancelLoadingPopup() {
+        ImageView imageView = popupAsyncView.findViewById(R.id.image_progress);
+        // Stop animation and change source image
+        imageView.setAnimation(null);
+        imageView.setImageResource(R.drawable.cross);
+
+        // Change info text
+        TextView textView = popupAsyncView.findViewById(R.id.info_text);
+        textView.setText("Odeslání se nezdařilo.");
+
+        Handler handler = new Handler();
+        handler.postDelayed(() -> {
+            popupAsyncWindow.dismiss();
+            }, 5000);
     }
 
     public static double getDistanceInMeters(double lat1, double lat2, double lon1, double lon2) {

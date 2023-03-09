@@ -66,7 +66,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-public class MapActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnPolylineClickListener {
+public class MapActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnPolylineClickListener, IActivity {
 
     private GoogleMap mMap;
     private ActivityMapBinding binding;
@@ -516,7 +516,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             throw new RuntimeException(e);
         }
 
-        HTTP http = new HTTP(this,"http://ulice.nti.tul.cz:5000/upload");
+        HTTP http = new HTTP(this,"http://ulice.nti.tul.cz:5000/upload/fulldata");
         AsyncTask<String, Void, String> result = http.execute(arrayToJson);
         Log.v("HTTP Async", result.getStatus().toString());
     }

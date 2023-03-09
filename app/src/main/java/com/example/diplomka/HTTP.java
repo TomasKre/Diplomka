@@ -1,5 +1,6 @@
 package com.example.diplomka;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -23,21 +24,11 @@ import java.util.concurrent.TimeUnit;
 
 public class HTTP extends AsyncTask<String, Void, String> {
     private URL url;
-    private MapActivity map;
+    private IActivity activity;
 
-    public HTTP(MapActivity map) {
-        this.map = map;
-        Log.v("HTTP", "HTTP initialized");
-        try {
-            this.url = new URL("http://ulice.nti.tul.cz:5000");
-        } catch (MalformedURLException e) {
-
-        }
-    }
-
-    public HTTP(MapActivity map, String url) {
-        this.map = map;
-        Log.v("HTTP", "HTTP initialized with url");
+    public HTTP(IActivity activity, String url) {
+        this.activity = activity;
+        Log.v("HTTP", "HTTP initialized with url: " + url);
         try {
             this.url = new URL(url);
         } catch (MalformedURLException e) {
@@ -88,9 +79,9 @@ public class HTTP extends AsyncTask<String, Void, String> {
     protected void onPostExecute(String result) {
         Log.v("HTTP result", result);
         if (result == "200") {
-            map.finishLoadingPopup();
+            activity.finishLoadingPopup();
         } else {
-            map.cancelLoadingPopup();
+            activity.cancelLoadingPopup();
         }
     }
 }

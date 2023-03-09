@@ -16,15 +16,27 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.RotateAnimation;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.PopupWindow;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -33,22 +45,27 @@ import java.util.List;
 
 import android.content.Intent;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements IActivity {
 
     private LocationManager locationManager;
     private LocationListener locationListener;
 
     public int session;
+    private int sessionOfItem;
     private DataModel dm;
     private final int minTimeMs = 2500;
     private final int minDistanceM = 5;
     private int[] permissionsRequests;
-
+    private View popupAsyncView;
+    private PopupWindow popupAsyncWindow;
     ListView dataWindow;
 
     @Override
@@ -166,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
 
         dataWindow.setOnItemClickListener((adapterView, view, position, l) -> {
             String value = adapter.getItem(position);
-            int sessionOfItem = Integer.parseInt(value.split("\\)")[0]);
+            sessionOfItem = Integer.parseInt(value.split("\\)")[0]);
             if (sessionOfItem != session) {
                 RadioButton open = findViewById(R.id.radio_open);
                 RadioButton send = findViewById(R.id.radio_send);
@@ -179,11 +196,10 @@ public class MainActivity extends AppCompatActivity {
                     builder.setMessage("Opravdu chcete odeslat záznamy s id " + sessionOfItem + "?");
 
                     builder.setPositiveButton("Ano", (dialog, which) -> {
-                        sendDataPointsToServer(sessionOfItem);
-                        //dm.deleteDataPointsBySession(sessionOfItem);
-                        //dm.deleteStreetDataBySession(sessionOfItem);
+                        sendDataPointsToServer();
                         showData(dm);
                         dialog.dismiss();
+                        createLoadingPopup();
                     });
                     builder.setNegativeButton("Ne", (dialog, which) -> {
                         // Do nothing
@@ -219,10 +235,6 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, MapActivity.class);
         intent.putExtra("item", msg);
         startActivity(intent);
-    }
-
-    private void sendDataPointsToServer(int sessionOfItem) {
-        Toast.makeText(this, "Není naimplementováno.", Toast.LENGTH_LONG).show();
     }
 
     private void infoButtonClickListener() {
@@ -341,4 +353,91 @@ public class MainActivity extends AppCompatActivity {
             storageButton.setClickable(true);
         }
     }
+
+    private void sendDataPointsToServer() {
+        ArrayList<DataPoint> points = dm.getDataPoints(sessionOfItem);
+        DataPointNamedArray finalJson = new DataPointNamedArray(points);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+        String arrayToJson = "";
+        try {
+            arrayToJson = objectMapper.writeValueAsString(finalJson);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        HTTP http = new HTTP(this,"http://ulice.nti.tul.cz:5000/upload/points");
+        AsyncTask<String, Void, String> result = http.execute(arrayToJson);
+        Log.v("HTTP Async", result.getStatus().toString());
+    }
+
+    public void createLoadingPopup() {
+        // inflate the layout of the popup window
+        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+        popupAsyncView = inflater.inflate(R.layout.popup_async_task, null);
+        ImageView imageView = popupAsyncView.findViewById(R.id.image_progress); //Initialize ImageView via FindViewById or programatically
+
+        RotateAnimation anim = new RotateAnimation(0.0f, 360.0f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        // Setup anim with desired properties
+        anim.setInterpolator(new LinearInterpolator());
+        anim.setRepeatCount(Animation.INFINITE); // repeat animation indefinitely
+        anim.setDuration(1250); // animation cycle length in milliseconds
+
+        // Start animation
+        imageView.startAnimation(anim);
+
+        // create the popup window
+        int width = LinearLayout.LayoutParams.WRAP_CONTENT;
+        int height = LinearLayout.LayoutParams.WRAP_CONTENT;
+        // focusable true by default
+        popupAsyncWindow = new PopupWindow(popupAsyncView, width, height);
+        popupAsyncWindow.showAtLocation(popupAsyncView, Gravity.CENTER, 0, 0);
+
+        // disable the activity
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+    }
+
+    public void finishLoadingPopup() {
+        ImageView imageView = popupAsyncView.findViewById(R.id.image_progress);
+        // Stop animation and change source image
+        imageView.setAnimation(null);
+        imageView.setImageResource(R.drawable.check_mark);
+
+        // Change info text
+        TextView textView = popupAsyncView.findViewById(R.id.info_text);
+        textView.setText("Odesláno, díky!");
+
+        dm.deleteDataPointsBySession(session);
+        dm.deleteStreetDataBySession(session);
+
+        Handler handler = new Handler();
+        handler.postDelayed(() -> {
+            // enable the activity
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+            dm.deleteDataPointsBySession(sessionOfItem);
+            dm.deleteStreetDataBySession(sessionOfItem);
+            popupAsyncWindow.dismiss();
+        }, 5000);
+    }
+
+    public void cancelLoadingPopup() {
+        ImageView imageView = popupAsyncView.findViewById(R.id.image_progress);
+        // Stop animation and change source image
+        imageView.setAnimation(null);
+        imageView.setImageResource(R.drawable.cross);
+
+        // Change info text
+        TextView textView = popupAsyncView.findViewById(R.id.info_text);
+        textView.setText("Odeslání se nezdařilo.");
+
+        Handler handler = new Handler();
+        handler.postDelayed(() -> {
+            // enable the activity
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+            popupAsyncWindow.dismiss();
+        }, 5000);
+    }
+
 }

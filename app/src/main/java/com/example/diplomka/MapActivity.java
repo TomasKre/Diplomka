@@ -16,6 +16,8 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
@@ -523,6 +525,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         // focusable true by default
         popupAsyncWindow = new PopupWindow(popupAsyncView, width, height);
         popupAsyncWindow.showAtLocation(popupAsyncView, Gravity.CENTER, 0, 0);
+
+        Button send_button = findViewById(R.id.send_button);
+        send_button.setClickable(false);
     }
 
     public void finishLoadingPopup() {
@@ -541,6 +546,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         Handler handler = new Handler();
         handler.postDelayed(() -> {
+            Button send_button = findViewById(R.id.send_button);
+            send_button.setClickable(true);
             popupAsyncWindow.dismiss();
             finish();
             }, 5000);
@@ -558,6 +565,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         Handler handler = new Handler();
         handler.postDelayed(() -> {
+            Button send_button = findViewById(R.id.send_button);
+            send_button.setClickable(true);
             popupAsyncWindow.dismiss();
             }, 5000);
     }

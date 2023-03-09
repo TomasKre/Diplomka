@@ -15,6 +15,10 @@ import javax.net.ssl.HttpsURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 
 public class HTTP extends AsyncTask<String, Void, String> {
@@ -51,6 +55,7 @@ public class HTTP extends AsyncTask<String, Void, String> {
             conn.setRequestProperty("Accept", "application/json");
             conn.setDoOutput(true);
             conn.setDoInput(true);
+            conn.setConnectTimeout(15000);
             conn.connect();
 
             try(OutputStream os = conn.getOutputStream()) {
@@ -71,7 +76,7 @@ public class HTTP extends AsyncTask<String, Void, String> {
         } catch (IOException e) {
             Log.v("HTTP", "IOException");
             Log.v("HTTP", e.getMessage());
-            return "404";
+            return "408";
         } catch (Exception e) {
             Log.v("HTTP", "Exception");
             Log.v("HTTP", e.getMessage());

@@ -117,7 +117,7 @@
         android:layout_height="wrap_content"
         android:text="Oprávnění aplikace:"
         android:layout_marginBottom="5dp"
-        android:textColor="@color/black"
+        android:textColor="@color/white"
         app:layout_constraintBottom_toTopOf="@id/storage_permission"
         app:layout_constraintLeft_toLeftOf="@+id/data_window" />
 
@@ -141,7 +141,7 @@
         android:text="S přesností > 95 % v okruhu "
         android:layout_marginTop="5dp"
         android:textSize="9dp"
-        android:textColor="@color/black"
+        android:textColor="@color/white"
         app:layout_constraintTop_toBottomOf="@id/measure_switch"
         app:layout_constraintLeft_toLeftOf="@+id/measure_switch" />
 
@@ -152,7 +152,7 @@
         android:text="__"
         android:layout_marginTop="5dp"
         android:textSize="9dp"
-        android:textColor="@color/black"
+        android:textColor="@color/white"
         app:layout_constraintTop_toBottomOf="@id/measure_switch"
         app:layout_constraintLeft_toRightOf="@+id/accuracy_first_part" />
 
@@ -163,7 +163,7 @@
         android:text=" metrů"
         android:layout_marginTop="5dp"
         android:textSize="9dp"
-        android:textColor="@color/black"
+        android:textColor="@color/white"
         app:layout_constraintTop_toBottomOf="@id/measure_switch"
         app:layout_constraintLeft_toRightOf="@+id/accuracy_value" />
 
@@ -173,7 +173,7 @@
         android:layout_height="32dp"
         android:layout_marginRight="10dp"
         android:layout_marginBottom="10dp"
-        android:src="@drawable/question_mark"
+        android:src="@drawable/question_mark_night"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
 

@@ -539,7 +539,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         // Change info text
         TextView textView = popupAsyncView.findViewById(R.id.info_text);
         textView.setText("Odesláno, díky!");
-        
+
         dm.deleteDataPointsBySession(session);
         dm.deleteStreetDataBySession(session);
 

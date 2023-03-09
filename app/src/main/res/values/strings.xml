@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Diplomka</string>
     <string name="title_activity_map">MapActivity</string>
+    <string name="night_mode">day</string>
     <string-array name="sidewalk_array">
         <item>Bez chodníku</item>
         <item>Chodník na jedné straně</item>

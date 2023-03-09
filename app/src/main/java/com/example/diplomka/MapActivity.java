@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentActivity;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Point;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -36,6 +37,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.diplomka.databinding.ActivityMapBinding;
 import com.google.android.gms.maps.model.PatternItem;
@@ -151,6 +153,21 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+
+        Log.d("Map", getResources().getString(R.string.night_mode));
+        if (getResources().getString(R.string.night_mode).equals("night")) {
+            try {
+                // Customise the styling of the base map using a JSON object defined in a raw resource file.
+                boolean success = googleMap.setMapStyle(
+                        MapStyleOptions.loadRawResourceStyle(
+                                this, R.raw.map_style_night));
+                if (!success) {
+                    Log.e("Map", "Style parsing failed.");
+                }
+            } catch (Resources.NotFoundException e) {
+                Log.e("Map", "Can't find style. Error: ", e);
+            }
+        }
 
         googleMap.setOnMapLongClickListener(latLng -> onMapLongClick(latLng));
 

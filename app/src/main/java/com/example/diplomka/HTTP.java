@@ -59,8 +59,26 @@ public class HTTP extends AsyncTask<String, Void, String> {
             }
 
             int responseCode = conn.getResponseCode();
-            conn.disconnect();
-            return Integer.toString(responseCode);
+
+            if (responseCode == 200) {
+                StringBuilder response = new StringBuilder();
+                try(BufferedReader br = new BufferedReader(
+                        new InputStreamReader(conn.getInputStream(), "utf-8"))) {
+                    String responseLine;
+                    while ((responseLine = br.readLine()) != null) {
+                        response.append(responseLine.trim());
+                    }
+                    Log.v("HTTP response", response.toString());
+                } catch (Exception e) {
+                    Log.v("HTTP", "Exception reading response");
+                    Log.v("HTTP", e.getMessage());
+                }
+                conn.disconnect();
+                return response.toString();
+            } else {
+                conn.disconnect();
+                return Integer.toString(responseCode);
+            }
         } catch (ProtocolException e) {
             Log.v("HTTP", "ProtocolException");
             Log.v("HTTP", e.getMessage());
@@ -78,7 +96,7 @@ public class HTTP extends AsyncTask<String, Void, String> {
     @Override
     protected void onPostExecute(String result) {
         Log.v("HTTP result", result);
-        if (result == "200") {
+        if (result.equals("200")) {
             activity.finishLoadingPopup();
         } else {
             activity.cancelLoadingPopup();

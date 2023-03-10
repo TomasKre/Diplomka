@@ -256,11 +256,15 @@ public class MainActivity extends AppCompatActivity implements IActivity {
         }
         if(v.isChecked()) {
             try {
+                // Pokud je vše povoleno, začni měřit
                 if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                         && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                     if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
                         if ((ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
                                 && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                            // Nastavení flagu obrazovky, aby nezhasínala
+                            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                            // Registrace listeneru na location updaty
                             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTimeMs, minDistanceM, locationListener);
                             return;
                         }
@@ -273,6 +277,8 @@ public class MainActivity extends AppCompatActivity implements IActivity {
                 v.setChecked(false);
             }
         } else {
+            // Vrácení zhasínání obrazovky na system default
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             // Odregistrace updatů lokace
             locationManager.removeUpdates(locationListener);
             // Kontrola a odstranění osamocených data pointů

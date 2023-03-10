@@ -14,10 +14,10 @@
 průzkumu na Technické univerzitě v Liberci. \n\nAplikace pořizuje zvukový záznam, ale pouze za účely
 zachycení úrovně hlasitosti a vždy pouze vteřinu během zaznamenávání GPS polohy. Tento záznam je
 pouze ve vyrovnávací paměti (bufferu) a není nikde ukládán a ani nikam sdílen. Navíc tento záznam
-nebude vůbec pořizován, pokud přepínač v hlavní části není v poloze zapnuto. \n\nGPS data jsou
-zaznamenávána s takovou přesností, s jakou ji poskytuje Vaše zařízení. K těmto bodůmje  připnuto i
+není vůbec pořizován, pokud v hlavní části není měření zapnuto. \n\nGPS data jsou
+zaznamenávána s takovou přesností, s jakou ji poskytuje Vaše zařízení. K těmto bodům je připnuto i
 datum, čas a výše zmíněná hlasitost. \n\nK Vašim zaznamenaným cestám lze i vyplnit doplňující údaje
-a poté odeslat na server, kde jsou data anonymizována. Kde mohou být použita k zobrazování
+a poté odeslat na server, kde jsou uložena anonymně. Zde jsou použita k zobrazování
 teplotních map (heatmap), které poslouží s získání přehledu o stavu ulic. \n\nPředem děkuji za
 případné zapojení do sběru dat a testování aplikace."
         android:textSize="16dp"

@@ -96,6 +96,11 @@ public class MainActivity extends AppCompatActivity implements IActivity {
         storageButton.setOnClickListener(v -> requestExternalStoragePermissions());
         infoButton.setOnClickListener(v -> infoButtonClickListener());
         onOffSwitch.setOnClickListener(v -> onOffSwitchClickListener((Switch) v));
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
         showData(dm);
     }
 
@@ -197,7 +202,6 @@ public class MainActivity extends AppCompatActivity implements IActivity {
 
                     builder.setPositiveButton("Ano", (dialog, which) -> {
                         sendDataPointsToServer();
-                        showData(dm);
                         dialog.dismiss();
                         createLoadingPopup();
                     });
@@ -322,6 +326,7 @@ public class MainActivity extends AppCompatActivity implements IActivity {
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putInt("session", ++session);
             editor.apply();
+            showData(dm);
         }
     }
 
@@ -418,6 +423,7 @@ public class MainActivity extends AppCompatActivity implements IActivity {
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
             dm.deleteDataPointsBySession(sessionOfItem);
             dm.deleteStreetDataBySession(sessionOfItem);
+            showData(dm);
             popupAsyncWindow.dismiss();
         }, 5000);
     }

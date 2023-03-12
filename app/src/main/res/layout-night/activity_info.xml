@@ -18,14 +18,16 @@ není vůbec pořizován, pokud v hlavní části není měření zapnuto. \n\nG
 zaznamenávána s takovou přesností, s jakou ji poskytuje Vaše zařízení. K těmto bodům je připnuto i
 datum, čas a výše zmíněná hlasitost. \n\nK Vašim zaznamenaným cestám lze i vyplnit doplňující údaje
 a poté odeslat na server, kde jsou uložena anonymně. Zde jsou použita k zobrazování
-teplotních map (heatmap), které poslouží s získání přehledu o stavu ulic. \n\nPředem děkuji za
-případné zapojení do sběru dat a testování aplikace."
+teplotních map (heatmap), které poslouží s získání přehledu o stavu ulic. \n\nZ důvodu citlivých
+oprávnění je nutné při probíhajícím měření ponechat zaplou obrazovku. Pokud nechcete nést telefon,
+doporučuji po zapnutí měření obrazovku uzamknout potažením zámku ve spodní části obrazovky, což navíc
+sníží jas. \n\nPředem děkuji za případné zapojení do sběru dat a testování aplikace."
         android:textSize="16dp"
         android:textColor="@color/white"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginTop="40dp"
-        android:layout_marginHorizontal="40dp"/>
+        android:layout_marginTop="30dp"
+        android:layout_marginHorizontal="30dp"/>
 
     <TextView
         android:id="@+id/copyright_text"

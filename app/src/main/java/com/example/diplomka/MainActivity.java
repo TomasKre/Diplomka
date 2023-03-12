@@ -22,7 +22,9 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
@@ -67,6 +69,10 @@ public class MainActivity extends AppCompatActivity implements IActivity {
     private View popupAsyncView;
     private PopupWindow popupAsyncWindow;
     ListView dataWindow;
+    private int startX;
+    private int StartLockX;
+    private boolean locked = false;
+    private final int maxLockMove = 150;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +90,7 @@ public class MainActivity extends AppCompatActivity implements IActivity {
         Button locationButton = findViewById(R.id.location_permission);
         Button microphoneButton = findViewById(R.id.microphone_permission);
         Button storageButton = findViewById(R.id.storage_permission);
+        ImageView lock = findViewById(R.id.lock);
         ImageView infoButton = findViewById(R.id.info_button);
         Switch onOffSwitch = findViewById(R.id.measure_switch);
         dataWindow = findViewById(R.id.data_window);
@@ -94,8 +101,76 @@ public class MainActivity extends AppCompatActivity implements IActivity {
         locationButton.setOnClickListener(v -> requestLocationPermission());
         microphoneButton.setOnClickListener(v -> requestMicrophonePermissions());
         storageButton.setOnClickListener(v -> requestExternalStoragePermissions());
+        lock.setOnTouchListener((v, event) -> lockTouchEvent((ImageView) v, event));
         infoButton.setOnClickListener(v -> infoButtonClickListener());
         onOffSwitch.setOnClickListener(v -> onOffSwitchClickListener((Switch) v));
+    }
+
+    private boolean lockTouchEvent(ImageView lock, MotionEvent event) {
+        int x = (int) event.getX();
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_CANCEL:
+                return false;
+            case MotionEvent.ACTION_DOWN:
+                // Zaznamenání polohy při dotyku na zámek
+                startX = x;
+                StartLockX = (int) lock.getX();
+                Log.d("Lock DOWN", "Touch X:" + x);
+                Log.d("Lock DOWN", "Image X:" + StartLockX);
+                break;
+            case MotionEvent.ACTION_MOVE:
+                // Pohyb obrázkem na ose X při slidu po zámku
+                int newX = Math.max(-maxLockMove, Math.min(maxLockMove, x - startX));
+                Log.v("Lock MOVE", "X - startX:" + x);
+                if (x - startX > 0 && !locked) {
+                    lock.setX(StartLockX + newX);
+                }
+                if (startX - x > 0 && locked) {
+                    lock.setX(StartLockX + newX);
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+                Log.d("Lock UP", "X:" + x);
+                if (locked) {
+                    // Odemčení UI
+                    if (startX - x > maxLockMove) {
+                        // ROzsvícení obrazovky
+                        WindowManager.LayoutParams WMLP = getWindow().getAttributes();
+                        WMLP.screenBrightness = 1.0f;
+                        getWindow().setAttributes(WMLP);
+                        // Odemčení UI
+                        enableUI(findViewById(R.id.main_layout), true);
+                        enableUI(findViewById(R.id.radio_group), true);
+                        locked = false;
+                        // Přenastavení pozice a zdroje ImageView
+                        lock.setX(StartLockX - maxLockMove);
+                        lock.setImageResource(R.drawable.lock_unlocked);
+                    } else {
+                        // Vrácení na původní pozici při neúplném pohybu
+                        lock.setX(StartLockX);
+                    }
+                } else {
+                    // Zamčení UI
+                    if (x - startX > maxLockMove) {
+                        // Zhasnutí obrazovky
+                        WindowManager.LayoutParams WMLP = getWindow().getAttributes();
+                        WMLP.screenBrightness = 0.0f;
+                        getWindow().setAttributes(WMLP);
+                        // Zamčení UI
+                        enableUI(findViewById(R.id.main_layout), false);
+                        enableUI(findViewById(R.id.radio_group), false);
+                        locked = true;
+                        // Přenastavení pozice a zdroje ImageView
+                        lock.setX(StartLockX + maxLockMove);
+                        lock.setImageResource(R.drawable.lock_locked);
+                    } else {
+                        // Vrácení na původní pozici při neúplném pohybu
+                        lock.setX(StartLockX);
+                    }
+                }
+                break;
+        }
+        return true;
     }
 
     @Override
@@ -335,6 +410,17 @@ public class MainActivity extends AppCompatActivity implements IActivity {
             showData(dm);
         }
     }
+
+    private void enableUI(ViewGroup target, boolean locked) {
+        int lockId = findViewById(R.id.lock).getId();
+        for (int i = 0; i < target.getChildCount(); i++) {
+            View child = target.getChildAt(i);
+            if (child.getId() != lockId) {
+                child.setEnabled(locked);
+            }
+        }
+    }
+
 
     public void checkPermissionButtons() {
         Button locationButton = findViewById(R.id.location_permission);

@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:id="@+id/main_layout">
 
     <ListView
         android:id="@+id/data_window"
@@ -166,6 +167,15 @@
         android:textColor="@color/black"
         app:layout_constraintTop_toBottomOf="@id/measure_switch"
         app:layout_constraintLeft_toRightOf="@+id/accuracy_value" />
+
+    <ImageView
+        android:id="@+id/lock"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginBottom="10dp"
+        android:src="@drawable/lock_unlocked"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/storage_permission" />
 
     <ImageView
         android:id="@+id/info_button"

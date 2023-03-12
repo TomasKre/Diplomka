@@ -134,7 +134,10 @@ public class MainActivity extends AppCompatActivity implements IActivity {
                 if (locked) {
                     // Odemčení UI
                     if (startX - x > maxLockMove) {
-                        // ROzsvícení obrazovky
+                        // Odebrání šipek pod zámkem
+                        ImageView arrows = findViewById(R.id.slide_arrow);
+                        arrows.setVisibility(View.VISIBLE);
+                        // Rozsvícení obrazovky
                         WindowManager.LayoutParams WMLP = getWindow().getAttributes();
                         WMLP.screenBrightness = 1.0f;
                         getWindow().setAttributes(WMLP);
@@ -152,6 +155,9 @@ public class MainActivity extends AppCompatActivity implements IActivity {
                 } else {
                     // Zamčení UI
                     if (x - startX > maxLockMove) {
+                        // Navrácení šipek pod zámek
+                        ImageView arrows = findViewById(R.id.slide_arrow);
+                        arrows.setVisibility(View.INVISIBLE);
                         // Zhasnutí obrazovky
                         WindowManager.LayoutParams WMLP = getWindow().getAttributes();
                         WMLP.screenBrightness = 0.0f;

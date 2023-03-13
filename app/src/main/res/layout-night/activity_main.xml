@@ -183,7 +183,7 @@
         android:layout_width="80dp"
         android:layout_height="80dp"
         android:layout_marginBottom="10dp"
-        android:src="@drawable/lock_unlocked"
+        android:src="@drawable/lock_unlocked_white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toRightOf="@id/storage_permission" />
 

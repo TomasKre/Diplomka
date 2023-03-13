@@ -147,7 +147,11 @@ public class MainActivity extends AppCompatActivity implements IActivity {
                         locked = false;
                         // Přenastavení pozice a zdroje ImageView
                         lock.setX(StartLockX - maxLockMove);
-                        lock.setImageResource(R.drawable.lock_unlocked);
+                        if (getResources().getString(R.string.night_mode).equals("night")) {
+                            lock.setImageResource(R.drawable.lock_unlocked_white);
+                        } else {
+                            lock.setImageResource(R.drawable.lock_unlocked);
+                        }
                     } else {
                         // Vrácení na původní pozici při neúplném pohybu
                         lock.setX(StartLockX);
@@ -168,7 +172,11 @@ public class MainActivity extends AppCompatActivity implements IActivity {
                         locked = true;
                         // Přenastavení pozice a zdroje ImageView
                         lock.setX(StartLockX + maxLockMove);
-                        lock.setImageResource(R.drawable.lock_locked);
+                        if (getResources().getString(R.string.night_mode).equals("night")) {
+                            lock.setImageResource(R.drawable.lock_locked_white);
+                        } else {
+                            lock.setImageResource(R.drawable.lock_locked);
+                        }
                     } else {
                         // Vrácení na původní pozici při neúplném pohybu
                         lock.setX(StartLockX);

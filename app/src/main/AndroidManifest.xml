@@ -19,21 +19,25 @@
         android:usesCleartextTraffic="true">
 
         <activity
+            android:name=".MapActivity"
+            android:exported="false"
+            android:label="@string/title_activity_map" />
+
+        <activity
+            android:name=".RealtimeMapActivity"
+            android:exported="false"
+            android:label="RealtimeMapActivity" />
+
+        <activity
             android:name=".InfoActivity"
-            android:exported="false">
-            <meta-data
-                android:name="android.app.lib_name"
-                android:value="" />
-        </activity>
+            android:exported="false"
+            android:label="InfoActivity" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${MAPS_API_KEY}" />
 
-        <activity
-            android:name=".MapActivity"
-            android:exported="false"
-            android:label="@string/title_activity_map" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true">

@@ -168,6 +168,16 @@
         app:layout_constraintTop_toBottomOf="@id/measure_switch"
         app:layout_constraintLeft_toRightOf="@+id/accuracy_value" />
 
+    <Button
+        android:id="@+id/realtime_measure_button"
+        android:layout_width="wrap_content"
+        android:layout_height="80dp"
+        android:text="Měření v \nreálném čase"
+        android:layout_marginTop="20dp"
+        app:layout_constraintTop_toBottomOf="@id/accuracy_first_part"
+        app:layout_constraintLeft_toLeftOf="@id/accuracy_first_part"
+        app:layout_constraintRight_toRightOf="@id/accuracy_last_part"/>
+
     <ImageView
         android:id="@+id/slide_arrow"
         android:layout_width="100dp"

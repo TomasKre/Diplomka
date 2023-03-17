@@ -3,13 +3,13 @@ package com.example.diplomka;
 import static com.example.diplomka.Tools.getDistanceInMeters;
 import static com.example.diplomka.Tools.getHumanDate;
 
-import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.FragmentActivity;
-
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -30,35 +30,40 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentActivity;
+
+import com.example.diplomka.databinding.ActivityMapBinding;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.android.gms.maps.CameraUpdateFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.example.diplomka.databinding.ActivityMapBinding;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-
-public class MapActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnPolylineClickListener, ISendDataActivity {
+public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnPolylineClickListener, ISendDataActivity, ILocationListenActivity {
 
     private GoogleMap mMap;
     private ActivityMapBinding binding;
     private DataModel dm;
-    private String msg;
+    private LocationManager locationManager;
+    private LocationListener locationListener;
     private int session;
     private List<DataPoint> dataPoints;
     private List<StreetData> dataStreets;
     private List<Polyline> polylineList;
     private List<DataPoint> markers;
+    private int part;
     private int maxPart;
     private int allPaths = 0;
     private int greenPaths = 0;
@@ -80,29 +85,36 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         ctx = getApplicationContext();
         dm = new DataModel(ctx);
 
-        //getExtra
-        if (savedInstanceState == null) {
-            Bundle extras = getIntent().getExtras();
-            if(extras == null) {
-                msg = null;
-            } else {
-                msg = extras.getString("item");
-            }
-        } else {
-            msg = (String) savedInstanceState.getSerializable("item");
-        }
-
-        session = Integer.parseInt(msg.split("\\)")[0]);
-        dataPoints = dm.getDataPoints(session);
-        dataStreets = dm.getStreetData(session);
-        polylineList = new ArrayList<>();
-        markers = new ArrayList<>();
-        maxPart = 0;
-
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+
+        //getExtra
+        if (savedInstanceState == null) {
+            Bundle extras = getIntent().getExtras();
+            if (extras == null) {
+                session = 0;
+            } else {
+                session = extras.getInt("session");
+            }
+        } else {
+            session = (Integer) savedInstanceState.getSerializable("session");
+        }
+
+        dataPoints = new ArrayList<>();
+        dataStreets = new ArrayList<>();
+        polylineList = new ArrayList<>();
+        markers = new ArrayList<>();
+        maxPart = 0;
+
+        if (locationManager == null) {
+            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        }
+        if (locationListener == null) {
+            locationListener = new LocationChangeListener(this, this);
+        }
 
         Button send_button = findViewById(R.id.send_button);
         send_button.setOnClickListener(v -> {
@@ -135,8 +147,12 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        // Pro IDE, aby neřvalo, že není permission, když vez permissionu se ani nedá tato třída vytvořit v mainu
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            mMap.setMyLocationEnabled(true);
+        }
 
-        Log.d("Map", getResources().getString(R.string.night_mode));
+        Log.d("Map Realtime", getResources().getString(R.string.night_mode));
         if (getResources().getString(R.string.night_mode).equals("night")) {
             try {
                 // Customise the styling of the base map using a JSON object defined in a raw resource file.
@@ -144,105 +160,15 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                         MapStyleOptions.loadRawResourceStyle(
                                 this, R.raw.map_style_night));
                 if (!success) {
-                    Log.e("Map", "Style parsing failed.");
+                    Log.e("Map Realtime", "Style parsing failed.");
                 }
             } catch (Resources.NotFoundException e) {
-                Log.e("Map", "Can't find style. Error: ", e);
+                Log.e("Map Realtime", "Can't find style. Error: ", e);
             }
         }
-
-        googleMap.setOnMapLongClickListener(latLng -> onMapLongClick(latLng));
-
-        LatLng lastPosition = null;
-        Long lastDatetimeMillis = (long) 0;
-        int lastId = 0;
-        int lastPart = 0;
-        int id_from = 0;
-        int part = 1;
-        DataPoint lastDataPoint = null;
-        // Případně color ve tvaru int 0xAARRGGBB
-        PolylineOptions polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.denied));
-        for (DataPoint dataPoint : dataPoints) {
-            if (lastPosition != null) {
-                LatLng position = new LatLng(dataPoint.lat, dataPoint.lon);
-                if (dataPoint.dt - lastDatetimeMillis < maxTimeMs) {
-                    polylineOptions.add(position);
-                    if (dataPoint.part != lastPart) {
-                        for (StreetData dataStreet : dataStreets) {
-                            if (dataStreet.part == lastPart) {
-                                if (dataStreet.isInput) {
-                                    polylineOptions.color(ContextCompat.getColor(ctx, R.color.accepted));
-                                    greenPaths++;
-                                }
-                                allPaths++;
-                                Polyline polyline = googleMap.addPolyline(polylineOptions);
-                                polylineList.add(polyline);
-                                polylineOptions = new PolylineOptions().clickable(true)
-                                        .color(ContextCompat.getColor(this, R.color.denied));
-                                polylineOptions.add(position);
-                                if (dataPoint.part > maxPart)
-                                    maxPart = dataPoint.part;
-                                mMap.addMarker(new MarkerOptions().position(position)
-                                        .title(getHumanDate(dataPoint.dt)));
-                                markers.add(dataPoint);
-                            }
-                        }
-                        lastPart = dataPoint.part;
-                    }
-                } else {
-                    Polyline polyline = googleMap.addPolyline(polylineOptions);
-                    polylineList.add(polyline);
-                    polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.denied));
-                    polylineOptions.add(position);
-                    lastPart = dataPoint.part;
-                    if (dataPoint.part > maxPart)
-                        maxPart = dataPoint.part;
-                    mMap.addMarker(new MarkerOptions().position(position).title(getHumanDate(dataPoint.dt)));
-                    markers.add(dataPoint);
-                    allPaths++;
-                }
-            } else {
-                LatLng position = new LatLng(dataPoint.lat, dataPoint.lon);
-                polylineOptions.add(position);
-                lastPart = dataPoint.part;
-                if (dataPoint.part > maxPart)
-                    maxPart = dataPoint.part;
-                mMap.addMarker(new MarkerOptions().position(position).title(getHumanDate(dataPoint.dt)));
-                markers.add(dataPoint);
-            }
-            lastPosition = new LatLng(dataPoint.lat, dataPoint.lon);
-            lastDatetimeMillis = dataPoint.dt;
-            lastDataPoint = dataPoint;
-        }
-        for (StreetData dataStreet : dataStreets) {
-            if (dataStreet.part == lastPart) {
-                if (dataStreet.isInput) {
-                    polylineOptions.color(ContextCompat.getColor(ctx, R.color.accepted));
-                    greenPaths++;
-                }
-                allPaths++;
-                Polyline polyline = googleMap.addPolyline(polylineOptions);
-                polylineList.add(polyline);
-                polylineOptions = new PolylineOptions().clickable(true)
-                        .color(ContextCompat.getColor(this, R.color.denied));
-                mMap.addMarker(new MarkerOptions().position(lastPosition)
-                        .title(getHumanDate(lastDatetimeMillis)));
-                markers.add(lastDataPoint);
-            }
-        }
-
-        // Custom map marker takto:
-        /*mMap.addMarker(new MarkerOptions().position(lastPosition).title(getHumanDate(dataPoint.dt))
-                .icon(BitmapDescriptorFactory.fromResource(R.drawable.map_marker)));*/
-
-        // Místo pouhého spojování bodů lze nakreslit cestu https://abhiandroid.com/programming/googlemaps
-
-        checkSendButton();
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lastPosition, 18.0f));
-        //lze vylepšit zazoomováním na těžiště bodů, místo na poslední bod
-        // případně i zoomem dle max N-S a W-E
 
         // Set listeners for click events.
+        googleMap.setOnMapLongClickListener(latLng -> onMapLongClick(latLng));
         googleMap.setOnPolylineClickListener(this);
     }
 
@@ -567,5 +493,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             send_button.setClickable(true);
             popupAsyncWindow.dismiss();
             }, 5000);
+    }
+
+    @Override
+    public void locationChanged(long timestamp, double latitude, double longitude, double noise, int accuracyInMeters) {
+        dm.addDataPoints(timestamp, session, latitude, longitude, noise, part);
     }
 }

@@ -1,32 +1,24 @@
 package com.example.diplomka;
 
-import android.app.Activity;
-import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
-import javax.net.ssl.HttpsURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 
 public class HTTP extends AsyncTask<String, Void, String> {
     private URL url;
-    private IActivity activity;
+    private ISendDataActivity activity;
 
-    public HTTP(IActivity activity, String url) {
+    public HTTP(ISendDataActivity activity, String url) {
         this.activity = activity;
         Log.v("HTTP", "HTTP initialized with url: " + url);
         try {

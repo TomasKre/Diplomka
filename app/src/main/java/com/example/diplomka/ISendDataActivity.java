@@ -1,6 +1,6 @@
 package com.example.diplomka;
 
-public interface IActivity {
+public interface ISendDataActivity {
     public void createLoadingPopup();
     public void finishLoadingPopup();
     public void cancelLoadingPopup();

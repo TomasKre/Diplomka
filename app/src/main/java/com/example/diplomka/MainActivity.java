@@ -49,11 +49,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.android.gms.maps.model.LatLng;
 
-public class MainActivity extends AppCompatActivity implements IActivity {
+public class MainActivity extends AppCompatActivity implements ISendDataActivity, ILocationListenActivity {
 
     private LocationManager locationManager;
     private LocationListener locationListener;
-
     public int session;
     private int sessionOfItem;
     private DataModel dm;
@@ -85,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements IActivity {
         Button locationButton = findViewById(R.id.location_permission);
         Button microphoneButton = findViewById(R.id.microphone_permission);
         Button storageButton = findViewById(R.id.storage_permission);
+        Button realtimeMapButton = findViewById(R.id.realtime_measure_button);
         ImageView lock = findViewById(R.id.lock);
         ImageView infoButton = findViewById(R.id.info_button);
         Switch onOffSwitch = findViewById(R.id.measure_switch);
@@ -96,6 +96,7 @@ public class MainActivity extends AppCompatActivity implements IActivity {
         locationButton.setOnClickListener(v -> requestLocationPermission());
         microphoneButton.setOnClickListener(v -> requestMicrophonePermissions());
         storageButton.setOnClickListener(v -> requestExternalStoragePermissions());
+        realtimeMapButton.setOnClickListener(v -> openRealtimeMapIntent());
         lock.setOnTouchListener((v, event) -> lockTouchEvent((ImageView) v, event));
         infoButton.setOnClickListener(v -> infoButtonClickListener());
         onOffSwitch.setOnClickListener(v -> onOffSwitchClickListener((Switch) v));
@@ -326,6 +327,27 @@ public class MainActivity extends AppCompatActivity implements IActivity {
         startActivity(intent);
     }
 
+    public void openRealtimeMapIntent() {
+        // Pokud je vše povoleno, začni měřit
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+                if ((ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+                        && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                    Intent intent = new Intent(this, RealtimeMapActivity.class);
+                    intent.putExtra("session", session);
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(this, "Nejsou povolena všechna oprávnění.", Toast.LENGTH_LONG).show();
+                }
+            } else {
+                Toast.makeText(this, "Nejsou povolena všechna oprávnění.", Toast.LENGTH_LONG).show();
+            }
+        } else {
+            Toast.makeText(this, "Nejsou povolena všechna oprávnění.", Toast.LENGTH_LONG).show();
+        }
+    }
+
     private void infoButtonClickListener() {
         Intent intent = new Intent(this, InfoActivity.class);
         startActivity(intent);
@@ -548,4 +570,12 @@ public class MainActivity extends AppCompatActivity implements IActivity {
         }, 5000);
     }
 
+    @Override
+    public void locationChanged(long timestamp, double latitude, double longitude, double noise, int accuracyInMeters) {
+        dm.addDataPoints(timestamp, session, latitude, longitude, noise, 0);
+        if (accuracyInMeters >= 0) {
+            TextView accuracyTextView = findViewById(R.id.accuracy_value);
+            accuracyTextView.setText(Integer.toString(accuracyInMeters));
+        }
+    }
 }

@@ -1,7 +1,6 @@
 package com.example.diplomka;
 
 import static com.example.diplomka.MapActivity.getDistanceInMeters;
-import static com.example.diplomka.MapActivity.getHumanDate;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -11,7 +10,6 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.LocationListener;
@@ -36,7 +34,6 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -51,9 +48,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
 
 public class MainActivity extends AppCompatActivity implements IActivity {
 
@@ -70,9 +64,10 @@ public class MainActivity extends AppCompatActivity implements IActivity {
     private PopupWindow popupAsyncWindow;
     ListView dataWindow;
     private int startX;
-    private int StartLockX;
+    private int startLockX;
     private boolean locked = false;
     private final int maxLockMove = 150;
+    private int startArrowX;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,25 +103,28 @@ public class MainActivity extends AppCompatActivity implements IActivity {
 
     private boolean lockTouchEvent(ImageView lock, MotionEvent event) {
         int x = (int) event.getX();
+        ImageView arrows = findViewById(R.id.slide_arrow);
+        WindowManager.LayoutParams WMLP = getWindow().getAttributes();
         switch (event.getAction()) {
             case MotionEvent.ACTION_CANCEL:
                 return false;
             case MotionEvent.ACTION_DOWN:
                 // Zaznamenání polohy při dotyku na zámek
                 startX = x;
-                StartLockX = (int) lock.getX();
+                startLockX = (int) lock.getX();
+                startArrowX = (int) arrows.getX();
                 Log.d("Lock DOWN", "Touch X:" + x);
-                Log.d("Lock DOWN", "Image X:" + StartLockX);
+                Log.d("Lock DOWN", "Image X:" + startLockX);
                 break;
             case MotionEvent.ACTION_MOVE:
                 // Pohyb obrázkem na ose X při slidu po zámku
                 int newX = Math.max(-maxLockMove, Math.min(maxLockMove, x - startX));
                 Log.v("Lock MOVE", "X - startX:" + x);
                 if (x - startX > 0 && !locked) {
-                    lock.setX(StartLockX + newX);
+                    lock.setX(startLockX + newX);
                 }
                 if (startX - x > 0 && locked) {
-                    lock.setX(StartLockX + newX);
+                    lock.setX(startLockX + newX);
                 }
                 break;
             case MotionEvent.ACTION_UP:
@@ -135,10 +133,9 @@ public class MainActivity extends AppCompatActivity implements IActivity {
                     // Odemčení UI
                     if (startX - x > maxLockMove) {
                         // Odebrání šipek pod zámkem
-                        ImageView arrows = findViewById(R.id.slide_arrow);
-                        arrows.setVisibility(View.VISIBLE);
+                        arrows.setRotation(0);
+                        arrows.setX(startArrowX + maxLockMove);
                         // Rozsvícení obrazovky
-                        WindowManager.LayoutParams WMLP = getWindow().getAttributes();
                         WMLP.screenBrightness = 1.0f;
                         getWindow().setAttributes(WMLP);
                         // Odemčení UI
@@ -146,7 +143,7 @@ public class MainActivity extends AppCompatActivity implements IActivity {
                         enableUI(findViewById(R.id.radio_group), true);
                         locked = false;
                         // Přenastavení pozice a zdroje ImageView
-                        lock.setX(StartLockX - maxLockMove);
+                        lock.setX(startLockX - maxLockMove);
                         if (getResources().getString(R.string.night_mode).equals("night")) {
                             lock.setImageResource(R.drawable.lock_unlocked_white);
                         } else {
@@ -154,16 +151,15 @@ public class MainActivity extends AppCompatActivity implements IActivity {
                         }
                     } else {
                         // Vrácení na původní pozici při neúplném pohybu
-                        lock.setX(StartLockX);
+                        lock.setX(startLockX);
                     }
                 } else {
                     // Zamčení UI
                     if (x - startX > maxLockMove) {
                         // Navrácení šipek pod zámek
-                        ImageView arrows = findViewById(R.id.slide_arrow);
-                        arrows.setVisibility(View.INVISIBLE);
+                        arrows.setRotation(180);
+                        arrows.setX(startArrowX - maxLockMove);
                         // Zhasnutí obrazovky
-                        WindowManager.LayoutParams WMLP = getWindow().getAttributes();
                         WMLP.screenBrightness = 0.0f;
                         getWindow().setAttributes(WMLP);
                         // Zamčení UI
@@ -171,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements IActivity {
                         enableUI(findViewById(R.id.radio_group), false);
                         locked = true;
                         // Přenastavení pozice a zdroje ImageView
-                        lock.setX(StartLockX + maxLockMove);
+                        lock.setX(startLockX + maxLockMove);
                         if (getResources().getString(R.string.night_mode).equals("night")) {
                             lock.setImageResource(R.drawable.lock_locked_white);
                         } else {
@@ -179,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements IActivity {
                         }
                     } else {
                         // Vrácení na původní pozici při neúplném pohybu
-                        lock.setX(StartLockX);
+                        lock.setX(startLockX);
                     }
                 }
                 break;

@@ -1,6 +1,6 @@
 package com.example.diplomka;
 
-import static com.example.diplomka.MapActivity.getDistanceInMeters;
+import static com.example.diplomka.Tools.getDistanceInMeters;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;

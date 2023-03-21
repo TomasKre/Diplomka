@@ -99,6 +99,16 @@ public class DataModel extends SQLiteOpenHelper {
         return count;
     }
 
+    public int getDataPointsMaxId(int session) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT MAX(" + ATR_ID + ") FROM " + TBL_NAME_POINTS +
+                " WHERE " + ATR_SESSION + "=?", new String[]{Integer.toString(session)});
+        if (cursor.moveToFirst()) {
+            return cursor.getInt(0);
+        }
+        return -1;
+    }
+
     public ArrayList<DataPoint> getDataPoints() {
         SQLiteDatabase db = this.getReadableDatabase();
 
@@ -327,15 +337,13 @@ public class DataModel extends SQLiteOpenHelper {
         return dataArrayList;
     }
 
-    public void updateStreetData(int from, int to, int part) {
+    public void updateStreetDataTo(int from, int to) {
         ContentValues values = new ContentValues();
-        values.put(ATR_FROM, from);
         values.put(ATR_TO, to);
-        values.put(ATR_PART, part);
 
         SQLiteDatabase db = this.getWritableDatabase();
-        db.update(TBL_NAME_STREETS, values, "point_from=? AND point_to=?",
-                new String[]{Integer.toString(from), Integer.toString(to)});
+        db.update(TBL_NAME_STREETS, values, ATR_FROM + "=?",
+                new String[]{Integer.toString(from)});
     }
 
     public void updateSplitStreetData(int from_id, int part, int newPart) {

@@ -420,7 +420,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                             }
                             break;
                     }
-                    return false;
+                    return true;
                 }
             });
         }
@@ -436,7 +436,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                         popupWindow.dismiss();
                         break;
                 }
-                return false;
+                return true;
             }
         });
 

@@ -36,9 +36,11 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import com.example.diplomka.databinding.ActivityMapBinding;
+import com.example.diplomka.databinding.ActivityRealtimeMapBinding;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -54,7 +56,7 @@ import java.util.List;
 public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnPolylineClickListener, ISendDataActivity, ILocationListenActivity {
 
     private GoogleMap mMap;
-    private ActivityMapBinding binding;
+    private ActivityRealtimeMapBinding binding;
     private DataModel dm;
     private LocationManager locationManager;
     private LocationListener locationListener;
@@ -63,23 +65,34 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
     private List<StreetData> dataStreets;
     private List<Polyline> polylineList;
     private List<DataPoint> markers;
-    private int part;
+    private PolylineOptions polylineOptions;
+    private int part = 1;
+    private DataPoint lastDataPoint;
+    private boolean firstPoint = true;
+    private double distanceInPart = 0;
     private int maxPart;
-    private int allPaths = 0;
-    private int greenPaths = 0;
     private Context ctx;
     private View popupAsyncView;
     private PopupWindow popupAsyncWindow;
 
     //mezi gps měřeními
-    private static final int maxTimeMs = 300000;
     private static final float maxDistanceM = 100;
+    private long minTimeMs = 1000;
+    private float minDistanceM = 5;
+    private int sidewalk = 0;
+    private int sidewalk_width = 0;
+    private int green = 0;
+    private int comfort = 0;
+    private int from;
+    private int to;
+    private Polyline lastPolyline;
+    private boolean newPart = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        binding = ActivityMapBinding.inflate(getLayoutInflater());
+        binding = ActivityRealtimeMapBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         ctx = getApplicationContext();
@@ -113,7 +126,15 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
             locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         }
         if (locationListener == null) {
-            locationListener = new LocationChangeListener(this, this);
+            locationListener = new LocationChangeListener(ctx, this);
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+                    if ((ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+                            && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTimeMs, minDistanceM, locationListener);
+                    }
+                }
+            }
         }
 
         Button send_button = findViewById(R.id.send_button);
@@ -172,7 +193,6 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
         googleMap.setOnPolylineClickListener(this);
     }
 
-    //@Override
     public void onMapLongClick(LatLng clickedLatLng) {
         // Iterate through the list of polylines and find the one that is closest to the long press location
         double minDistanceLines = Double.MAX_VALUE;
@@ -229,11 +249,9 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
                         if (closestPolyline.getColor() != ContextCompat.getColor(this, R.color.denied)) {
                             isInput = true;
                             polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.accepted));
-                            greenPaths++;
                         } else {
                             polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.denied));
                         }
-                        allPaths++;
 
                         // Algoritmus lze zjednodušit oproti onMapReady, jelikož podmínky času a vzdálenosti jsou již splněny
                         // Projdi všechny body dané části a utvoř nové 2 polyline, starou odstraň
@@ -261,7 +279,6 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
                         polylineList.add(polyline);
                         polylineList.remove(closestPolyline);
                         closestPolyline.remove();
-                        checkSendButton();
                         break;
                     }
                 }
@@ -340,8 +357,6 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
                                     spinnerSidewalkWidth.getSelectedItemPosition(), spinnerGreen.getSelectedItemPosition(),
                                     spinnerComfort.getSelectedItemPosition());
                             if(polyline.getColor() == ContextCompat.getColor(ctx, R.color.denied)) {
-                                greenPaths++;
-                                checkSendButton();
                                 polyline.setColor(ContextCompat.getColor(ctx, R.color.accepted));
                             }
                             break;
@@ -369,18 +384,6 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
         // show the popup window
         // which view you pass in doesn't matter, it is only used for the window token
         popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0);
-    }
-
-    private void checkSendButton() {
-        Log.v("Map paths", "Green paths: " + greenPaths + "/" + allPaths);
-        Button send_button = findViewById(R.id.send_button);
-        if (allPaths == greenPaths && allPaths > 0) {
-            send_button.setClickable(true);
-            send_button.setBackground(ContextCompat.getDrawable(this, R.drawable.button_save_border));
-        } else {
-            send_button.setClickable(false);
-            send_button.setBackground(ContextCompat.getDrawable(this, R.drawable.button_deny_border));
-        }
     }
 
     private void sendStreetDataAndDataPointsToServer(int session) {
@@ -497,6 +500,60 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
 
     @Override
     public void locationChanged(long timestamp, double latitude, double longitude, double noise, int accuracyInMeters) {
+        LatLng position = new LatLng(latitude, longitude);
+        if (polylineOptions == null) {
+            polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.accepted));
+        } else {
+            lastPolyline.remove();
+        }
+        polylineOptions.add(position);
+        lastPolyline = mMap.addPolyline(polylineOptions);
+
+        if (lastDataPoint != null)
+            distanceInPart += getDistanceInMeters(lastDataPoint.lat, latitude, lastDataPoint.lon, longitude);
+
+        if (distanceInPart >= maxDistanceM) {
+            mMap.addMarker(new MarkerOptions().position(position)
+                    .title(getHumanDate(timestamp)));
+
+            polylineList.add(lastPolyline);
+            polylineOptions = new PolylineOptions().clickable(true)
+                    .color(ContextCompat.getColor(this, R.color.accepted));
+            polylineOptions.add(position);
+            lastPolyline = mMap.addPolyline(polylineOptions);
+
+            distanceInPart = 0;
+            part++;
+            newPart = true;
+        }
+
         dm.addDataPoints(timestamp, session, latitude, longitude, noise, part);
+        dataPoints.add(lastDataPoint);
+
+        if (firstPoint) {
+            firstPoint = false;
+            mMap.addMarker(new MarkerOptions().position(position)
+                    .title(getHumanDate(timestamp)));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 18.0f));
+            from = dm.getDataPointsMaxId(session);
+            to = from;
+            dm.addStreetData(session, from, to, part, sidewalk, sidewalk_width, green, comfort, 1);
+        } else {
+            to++;
+            dm.updateStreetDataTo(from, to);
+            if (newPart) {
+                newPart = false;
+                from = to;
+                dm.addStreetData(session, from, to, part, sidewalk, sidewalk_width, green, comfort, 1);
+            }
+        }
+        lastDataPoint = new DataPoint(session, timestamp, latitude, longitude, (float) noise, part);
+    }
+
+    @Override
+    protected void onDestroy() {
+        locationManager.removeUpdates(locationListener);
+        dm.deleteSoloDataPoints();
+        super.onDestroy();
     }
 }

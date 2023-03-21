@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
 
     private LocationManager locationManager;
     private LocationListener locationListener;
-    public int session;
+    private int session = 0;
     private int sessionOfItem;
     private DataModel dm;
     private final int minTimeMs = 2500;
@@ -61,20 +61,19 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
     private int[] permissionsRequests;
     private View popupAsyncView;
     private PopupWindow popupAsyncWindow;
-    ListView dataWindow;
+    private ListView dataWindow;
     private int startX;
     private int startLockX;
     private boolean locked = false;
     private final int maxLockMove = 150;
     private int startArrowX;
+    // čas a vzdálenost pro nasekání cest
+    private final int maxTimeMs = 300000;
+    private final float maxDistanceM = 100;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("session_prefs", 0);
-        session = sharedPreferences.getInt("session", 0);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt("session", ++session);
-        editor.apply();// TODO: odmazat? nebo pouze
+        incrementSession();
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -186,8 +185,30 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
 
     @Override
     public void onResume() {
+        Log.v("Activity lifecycle", "onResume");
         super.onResume();
         showData(dm);
+    }
+
+    @Override
+    protected void onPause() {
+        Log.v("Activity lifecycle", "onPause");
+        // Vrácení zhasínání obrazovky na system default
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        // Odregistrace updatů lokace
+        locationManager.removeUpdates(locationListener);
+        // Kontrola a odstranění osamocených data pointů
+        dm.deleteSoloDataPoints();
+        // Nasekání cest
+        chopPathIntoParts();
+        // Odčeknutí switche
+        Switch measureSwitch = findViewById(R.id.measure_switch);
+        measureSwitch.setChecked(false);
+        // Inkrement session
+        incrementSession();
+        // Překreslení dat
+        showData(dm);
+        super.onPause();
     }
 
     private final int MY_PERMISSIONS_EXTERNAL_STORAGE = 3;
@@ -368,7 +389,7 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
                         && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                     if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
                         if ((ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
-                                && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                                && ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                             // Nastavení flagu obrazovky, aby nezhasínala
                             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                             // Registrace listeneru na location updaty
@@ -391,56 +412,64 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
             // Kontrola a odstranění osamocených data pointů
             dm.deleteSoloDataPoints();
             // Nasekání cest
-            LatLng lastPosition = null;
-            Long lastDatetimeMillis = (long) 0;
-            int lastId = 0;
-            int id_from = 0;
-            int part = 1;
-            DataPoint lastDataPoint = null;
-            double meters = 0.0;
-            // čas a vzdálenost pro nasekání cest
-            final int maxTimeMs = 300000;
-            final float maxDistanceM = 100;
-            List<DataPoint> dataPoints = dm.getDataPoints(session);
-            for (DataPoint dataPoint : dataPoints) {
-                if(lastPosition != null) {
-                    if (dataPoint.dt - lastDatetimeMillis < maxTimeMs) {
-                        meters += getDistanceInMeters(lastPosition.latitude, dataPoint.lat,
-                                lastPosition.longitude, dataPoint.lon);
-                        if (meters >= maxDistanceM) {
-                            meters = 0;
-                            dm.addStreetData(session, id_from, dataPoint.id, part++, 0, 0,
-                                    0, 0, 0);
-                            id_from = dataPoint.id;
-                        }
-                        dm.updateDataPoints(dataPoint.id, part);
-                    } else {
+            chopPathIntoParts();
+            // Odčeknutí switche
+            v.setChecked(false);
+            // Inkrement session
+            incrementSession();
+            // Překreslení dat
+            showData(dm);
+        }
+    }
+
+    private void chopPathIntoParts() {
+        LatLng lastPosition = null;
+        Long lastDatetimeMillis = (long) 0;
+        int lastId = 0;
+        int id_from = 0;
+        int part = 1;
+        double meters = 0.0;
+        List<DataPoint> dataPoints = dm.getDataPoints(session);
+        for (DataPoint dataPoint : dataPoints) {
+            if(lastPosition != null) {
+                if (dataPoint.dt - lastDatetimeMillis < maxTimeMs) {
+                    meters += getDistanceInMeters(lastPosition.latitude, dataPoint.lat,
+                            lastPosition.longitude, dataPoint.lon);
+                    if (meters >= maxDistanceM) {
                         meters = 0;
                         dm.addStreetData(session, id_from, dataPoint.id, part++, 0, 0,
                                 0, 0, 0);
                         id_from = dataPoint.id;
-                        dm.updateDataPoints(dataPoint.id, part);
                     }
+                    dm.updateDataPoints(dataPoint.id, part);
                 } else {
+                    meters = 0;
+                    dm.addStreetData(session, id_from, dataPoint.id, part++, 0, 0,
+                            0, 0, 0);
                     id_from = dataPoint.id;
                     dm.updateDataPoints(dataPoint.id, part);
                 }
-                lastPosition = new LatLng(dataPoint.lat, dataPoint.lon);
-                lastDatetimeMillis = dataPoint.dt;
-                lastId = dataPoint.id;
+            } else {
+                id_from = dataPoint.id;
+                dm.updateDataPoints(dataPoint.id, part);
             }
-            if (meters > 0) {
-                dm.addStreetData(session, id_from, lastId, part, 0, 0,
-                        0, 0, 0);
-            }
-            // Inkrement session
-            SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("session_prefs", 0);
-            session = sharedPreferences.getInt("session", 0);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putInt("session", ++session);
-            editor.apply();
-            showData(dm);
+            lastPosition = new LatLng(dataPoint.lat, dataPoint.lon);
+            lastDatetimeMillis = dataPoint.dt;
+            lastId = dataPoint.id;
         }
+        if (meters > 0) {
+            dm.addStreetData(session, id_from, lastId, part, 0, 0,
+                    0, 0, 0);
+        }
+    }
+
+    private void incrementSession() {
+        SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("session_prefs", 0);
+        if (session == 0)
+            session = sharedPreferences.getInt("session", 0);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt("session", ++session);
+        editor.apply();
     }
 
     private void enableUI(ViewGroup target, boolean locked) {
@@ -452,7 +481,6 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
             }
         }
     }
-
 
     public void checkPermissionButtons() {
         Button locationButton = findViewById(R.id.location_permission);

@@ -2,20 +2,44 @@
     <string name="app_name">Diplomka</string>
     <string name="title_activity_map">MapActivity</string>
     <string name="night_mode">day</string>
+    <string name="info_text_string">Aplikace vypracována v rámci dimplomové práce Automatizace dopravního průzkumu na Technické univerzitě v Liberci. \n\nAplikace pořizuje zvukový záznam, ale pouze za účely zachycení úrovně hlasitosti a vždy pouze vteřinu během zaznamenávání GPS polohy. Tento záznam je pouze ve vyrovnávací paměti (bufferu) a není nikde ukládán a ani nikam sdílen. Navíc tento záznam není vůbec pořizován, pokud v hlavní části není měření zapnuto. \n\nGPS data jsou zaznamenávána s takovou přesností, s jakou ji poskytuje Vaše zařízení. K těmto bodům je připnuto i datum, čas a výše zmíněná hlasitost. \n\nK Vašim zaznamenaným cestám lze i vyplnit doplňující údaje a poté odeslat na server, kde jsou uložena anonymně. Zde jsou použita k zobrazování teplotních map (heatmap), které poslouží s získání přehledu o stavu ulic. \n\nZ důvodu citlivých oprávnění je nutné při probíhajícím měření ponechat zaplou obrazovku. Pokud nechcete nést telefon, doporučuji po zapnutí měření obrazovku uzamknout potažením zámku ve spodní části obrazovky, což navíc sníží jas. \n\nPředem děkuji za případné zapojení do sběru dat a testování aplikace.</string>
+    <string name="copyright_author">© Tomáš Krechler 2022-2023</string>
+    <string name="open">Otevřít</string>
+    <string name="send">Odeslat</string>
+    <string name="delete">Smazat</string>
+    <string name="microphone">Mikrofon</string>
+    <string name="location">Poloha</string>
+    <string name="storage">Úložiště</string>
+    <string name="application_permissions">Oprávnění aplikace:</string>
+    <string name="measurement_switch">Měření zapnuto:</string>
+    <string name="accuracy_info"><![CDATA[S přesností > 95 % v okruhu]]></string>
+    <string name="accuracy_value">__</string>
+    <string name="accuracy_meters">metrů</string>
+    <string name="realtime_map_button">Měření v \nreálném čase</string>
+    <string name="data_sending">Odesílání dat</string>
+    <string name="sidewalk_label">Přítomnost chodníku:</string>
+    <string name="sidewalk_width_label">Šířka chodníku:</string>
+    <string name="green_label">Zeleň:</string>
+    <string name="safety_label">Pocit bezpečí:</string>
+    <string name="save">Uložit</string>
+    <string name="cancel">Zrušit</string>
+    <string name="off">OFF</string>
+    <string name="on">ON</string>
     <string-array name="sidewalk_array">
         <item>Bez chodníku</item>
         <item>Chodník na jedné straně</item>
         <item>Chodník na obou stranách</item>
     </string-array>
     <string-array name="sidewalk_width_array">
+        <item>Žádný</item>
         <item>Úzký</item>
         <item>Dostatečně široký</item>
         <item>Velmi široký</item>
     </string-array>
     <string-array name="green_array">
         <item>Bez zeleně</item>
-        <item>Stromy</item>
-        <item>Stromy a trávník nebo květiny</item>
+        <item>Trávník nebo stromy</item>
+        <item>Trávník a keře nebo stromy</item>
         <item>Zelené město</item>
     </string-array>
     <string-array name="comfort_array">

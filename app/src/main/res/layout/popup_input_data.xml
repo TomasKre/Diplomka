@@ -10,7 +10,7 @@
         android:id="@+id/sidewalk_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Přítomnost chodníku:"
+        android:text="@string/sidewalk_label"
         android:layout_marginTop="10dp"
         android:layout_marginLeft="10dp"/>
 
@@ -27,7 +27,7 @@
         android:id="@+id/sidewalk_width_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Šířka chodníku:"
+        android:text="@string/sidewalk_width_label"
         android:layout_below="@+id/sidewalk_text"
         android:layout_marginTop="10dp"
         android:layout_marginLeft="10dp"/>
@@ -45,7 +45,7 @@
         android:id="@+id/green_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Zeleň:"
+        android:text="@string/green_label"
         android:layout_below="@+id/sidewalk_width_text"
         android:layout_marginTop="10dp"
         android:layout_marginLeft="10dp"/>
@@ -63,7 +63,7 @@
         android:id="@+id/safespace_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Pocit bezpečí:"
+        android:text="@string/safety_label"
         android:layout_below="@+id/green_text"
         android:layout_marginTop="10dp"
         android:layout_marginLeft="10dp"/>
@@ -81,7 +81,7 @@
         android:id="@+id/save_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Uložit"
+        android:text="@string/save"
         android:layout_below="@+id/safespace_text"
         android:layout_alignParentLeft="true"
         android:layout_marginVertical="12dp"
@@ -92,7 +92,7 @@
         android:id="@+id/cancel_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Zrušit"
+        android:text="@string/cancel"
         android:layout_below="@+id/safespace_text"
         android:layout_alignParentRight="true"
         android:layout_marginVertical="12dp"

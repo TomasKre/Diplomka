@@ -22,6 +22,6 @@
         android:layout_marginRight="5dp"
         android:layout_marginBottom="5dp"
         android:background="@drawable/button_save_border"
-        android:text="Odeslat" />
+        android:text="@string/send" />
 
 </RelativeLayout>

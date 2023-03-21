@@ -19,7 +19,7 @@
         android:id="@+id/info_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Odesílání dat"
+        android:text="@string/data_sending"
         android:textColor="@color/white"
         android:layout_below="@+id/image_progress"
         android:layout_centerHorizontal="true"

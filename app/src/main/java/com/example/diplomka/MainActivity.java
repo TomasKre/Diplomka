@@ -196,7 +196,8 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
         // Vrácení zhasínání obrazovky na system default
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         // Odregistrace updatů lokace
-        locationManager.removeUpdates(locationListener);
+        if (locationManager != null)
+            locationManager.removeUpdates(locationListener);
         // Kontrola a odstranění osamocených data pointů
         dm.deleteSoloDataPoints();
         // Nasekání cest
@@ -605,5 +606,6 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
             TextView accuracyTextView = findViewById(R.id.accuracy_value);
             accuracyTextView.setText(Integer.toString(accuracyInMeters));
         }
+        showData(dm);
     }
 }

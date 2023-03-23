@@ -87,6 +87,7 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
     private int to;
     private Polyline lastPolyline;
     private boolean newPart = false;
+    private int id;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,7 +118,6 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
         }
 
         dataPoints = new ArrayList<>();
-        dataStreets = new ArrayList<>();
         polylineList = new ArrayList<>();
         markers = new ArrayList<>();
         maxPart = 0;
@@ -292,21 +292,6 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
 
     @Override
     public void onPolylineClick(@NonNull Polyline polyline) {
-        List<LatLng> geoPoints = polyline.getPoints();
-        LatLng pointA = geoPoints.get(0);
-        LatLng pointB = geoPoints.get(geoPoints.size() - 1);
-        int from = 0, to = 0;
-        // Asi není nejelegantnější řešení, ale cesty nejspíše nebudou mít počet bodů v řádech tisíců
-        // Jsou pouze z jedné session
-        for (DataPoint dataPoint : dataPoints) {
-            if(dataPoint.lat == pointA.latitude && dataPoint.lon == pointA.longitude) {
-                from = dataPoint.id;
-            }
-            if(dataPoint.lat == pointB.latitude && dataPoint.lon == pointB.longitude) {
-                to = dataPoint.id;
-            }
-        }
-
         // inflate the layout of the popup window
         LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
         View popupView = inflater.inflate(R.layout.popup_input_data, null);
@@ -342,46 +327,31 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
         final PopupWindow popupWindow = new PopupWindow(popupView, width, height);
 
         Button buttonSave = (Button) popupView.findViewById(R.id.save_button);
-        Button buttonCancel = (Button) popupView.findViewById(R.id.cancel_button);
-        if (from != 0 && to != 0) {
-            int finalFrom = from;
-            int finalTo = to;
-            buttonSave.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                    switch (event.getAction()) {
-                        case MotionEvent.ACTION_CANCEL:
-                        case MotionEvent.ACTION_DOWN:
-                            break;
-                        case MotionEvent.ACTION_UP:
-                            popupWindow.dismiss();
-                            dm.updateStreetData(finalFrom, finalTo, spinnerSidewalk.getSelectedItemPosition(),
-                                    spinnerSidewalkWidth.getSelectedItemPosition(), spinnerGreen.getSelectedItemPosition(),
-                                    spinnerComfort.getSelectedItemPosition());
-                            if(polyline.getColor() == ContextCompat.getColor(ctx, R.color.denied)) {
-                                polyline.setColor(ContextCompat.getColor(ctx, R.color.accepted));
-                            }
-                            break;
-                    }
-                    return false;
-                }
-            });
-        }
-
-        buttonCancel.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_CANCEL:
-                    case MotionEvent.ACTION_DOWN:
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        popupWindow.dismiss();
-                        break;
-                }
-                return false;
+        List<LatLng> geoPoints = polyline.getPoints();
+        LatLng pointA = geoPoints.get(0);
+        LatLng pointB = geoPoints.get(geoPoints.size() - 1);
+        int from = 0, to = 0;
+        // Asi není nejelegantnější řešení, ale cesty nejspíše nebudou mít počet bodů v řádech tisíců
+        // Jsou pouze z jedné session
+        for (DataPoint dataPoint : dataPoints) {
+            if(dataPoint.lat == pointA.latitude && dataPoint.lon == pointA.longitude) {
+                from = dataPoint.id;
             }
+            if(dataPoint.lat == pointB.latitude && dataPoint.lon == pointB.longitude) {
+                to = dataPoint.id;
+            }
+        }
+        int finalFrom = from;
+        int finalTo = to;
+        buttonSave.setOnClickListener(v -> {
+            dm.updateStreetData(finalFrom, finalTo, spinnerSidewalk.getSelectedItemPosition(),
+                    spinnerSidewalkWidth.getSelectedItemPosition(), spinnerGreen.getSelectedItemPosition(),
+                    spinnerComfort.getSelectedItemPosition());
+            popupWindow.dismiss();
         });
+
+        Button buttonCancel = (Button) popupView.findViewById(R.id.cancel_button);
+        buttonCancel.setOnClickListener(v -> popupWindow.dismiss());
 
         // show the popup window
         // which view you pass in doesn't matter, it is only used for the window token
@@ -588,17 +558,18 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
         }
 
         dm.addDataPoints(timestamp, session, latitude, longitude, noise, part);
-        dataPoints.add(lastDataPoint);
 
         if (firstPoint) {
             firstPoint = false;
             mMap.addMarker(new MarkerOptions().position(position)
                     .title(getHumanDate(timestamp)));
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 17.0f));
-            from = dm.getDataPointsMaxId(session);
+            id = dm.getDataPointsMaxId(session);
+            from = id;
             to = from;
             dm.addStreetData(session, from, to, part, sidewalk, sidewalk_width, green, comfort, 1);
         } else {
+            id++;
             to++;
             dm.updateStreetDataTo(from, to);
             if (newPart) {
@@ -607,7 +578,8 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
                 dm.addStreetData(session, from, to, part, sidewalk, sidewalk_width, green, comfort, 1);
             }
         }
-        lastDataPoint = new DataPoint(session, timestamp, latitude, longitude, (float) noise, part);
+        lastDataPoint = new DataPoint(id, session, timestamp, latitude, longitude, (float) noise, part);
+        dataPoints.add(lastDataPoint);
     }
 
     @Override

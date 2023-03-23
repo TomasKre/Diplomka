@@ -186,8 +186,9 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
     @Override
     public void onResume() {
         Log.v("Activity lifecycle", "onResume");
-        super.onResume();
+        dm.deleteSoloDataPoints();
         showData(dm);
+        super.onResume();
     }
 
     @Override

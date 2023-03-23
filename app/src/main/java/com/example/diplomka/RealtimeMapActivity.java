@@ -35,7 +35,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
-import com.example.diplomka.databinding.ActivityMapBinding;
 import com.example.diplomka.databinding.ActivityRealtimeMapBinding;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -83,6 +82,7 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
     private int sidewalk_width = 0;
     private int green = 0;
     private int comfort = 0;
+    private boolean streetDataChanged = false;
     private int from;
     private int to;
     private Polyline lastPolyline;
@@ -155,6 +155,8 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
             AlertDialog alert = builder.create();
             alert.show();
         });
+        Button street_data_button = findViewById(R.id.street_data_button);
+        street_data_button.setOnClickListener(v -> onStreetDataButtonClick());
     }
 
     /**
@@ -190,7 +192,7 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
 
         // Set listeners for click events.
         googleMap.setOnMapLongClickListener(latLng -> onMapLongClick(latLng));
-        googleMap.setOnPolylineClickListener(this);
+        googleMap.setOnPolylineClickListener(polyline -> onPolylineClick(polyline));
     }
 
     public void onMapLongClick(LatLng clickedLatLng) {
@@ -386,6 +388,62 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
         popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0);
     }
 
+    private void onStreetDataButtonClick() {
+        // inflate the layout of the popup window
+        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+        View popupView = inflater.inflate(R.layout.popup_input_data, null);
+
+        Spinner spinnerSidewalk = (Spinner) popupView.findViewById(R.id.sidewalk_spinner);
+        ArrayAdapter<CharSequence> adapterSidewalk = ArrayAdapter.createFromResource(this,
+                R.array.sidewalk_array, android.R.layout.simple_spinner_item);
+        adapterSidewalk.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerSidewalk.setAdapter(adapterSidewalk);
+        spinnerSidewalk.setSelection(sidewalk);
+
+        Spinner spinnerSidewalkWidth = (Spinner) popupView.findViewById(R.id.sidewalk_width_spinner);
+        ArrayAdapter<CharSequence> adapterSidewalkWidth = ArrayAdapter.createFromResource(this,
+                R.array.sidewalk_width_array, android.R.layout.simple_spinner_item);
+        adapterSidewalkWidth.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerSidewalkWidth.setAdapter(adapterSidewalkWidth);
+        spinnerSidewalkWidth.setSelection(sidewalk_width);
+
+        Spinner spinnerGreen = (Spinner) popupView.findViewById(R.id.green_spinner);
+        ArrayAdapter<CharSequence> adapterGreen = ArrayAdapter.createFromResource(this,
+                R.array.green_array, android.R.layout.simple_spinner_item);
+        adapterGreen.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerGreen.setAdapter(adapterGreen);
+        spinnerGreen.setSelection(green);
+
+        Spinner spinnerComfort = (Spinner) popupView.findViewById(R.id.safespace_spinner);
+        ArrayAdapter<CharSequence> adapterComfort = ArrayAdapter.createFromResource(this,
+                R.array.comfort_array, android.R.layout.simple_spinner_item);
+        adapterComfort.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerComfort.setAdapter(adapterComfort);
+        spinnerComfort.setSelection(comfort);
+
+        // create the popup window
+        int width = LinearLayout.LayoutParams.WRAP_CONTENT;
+        int height = LinearLayout.LayoutParams.WRAP_CONTENT;
+        // focusable true by default
+        final PopupWindow popupWindow = new PopupWindow(popupView, width, height);
+
+        Button buttonSave = (Button) popupView.findViewById(R.id.save_button);
+        Button buttonCancel = (Button) popupView.findViewById(R.id.cancel_button);
+        buttonSave.setOnClickListener(v -> {
+            streetDataChanged = true;
+            sidewalk = spinnerSidewalk.getSelectedItemPosition();
+            sidewalk_width = spinnerSidewalkWidth.getSelectedItemPosition();
+            green = spinnerGreen.getSelectedItemPosition();
+            comfort = spinnerComfort.getSelectedItemPosition();
+            popupWindow.dismiss();
+        });
+        buttonCancel.setOnClickListener(v -> popupWindow.dismiss());
+
+        // show the popup window
+        // which view you pass in doesn't matter, it is only used for the window token
+        popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0);
+    }
+
     private void sendStreetDataAndDataPointsToServer(int session) {
         ArrayList<DataPoint> points = dm.getDataPoints(session);
         ArrayList<StreetData> streets = dm.getStreetData(session);
@@ -512,7 +570,7 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
         if (lastDataPoint != null)
             distanceInPart += getDistanceInMeters(lastDataPoint.lat, latitude, lastDataPoint.lon, longitude);
 
-        if (distanceInPart >= maxDistanceM) {
+        if (distanceInPart >= maxDistanceM || streetDataChanged) {
             mMap.addMarker(new MarkerOptions().position(position)
                     .title(getHumanDate(timestamp)));
 
@@ -525,6 +583,8 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
             distanceInPart = 0;
             part++;
             newPart = true;
+
+            streetDataChanged = false;
         }
 
         dm.addDataPoints(timestamp, session, latitude, longitude, noise, part);
@@ -534,7 +594,7 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
             firstPoint = false;
             mMap.addMarker(new MarkerOptions().position(position)
                     .title(getHumanDate(timestamp)));
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 18.0f));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 17.0f));
             from = dm.getDataPointsMaxId(session);
             to = from;
             dm.addStreetData(session, from, to, part, sidewalk, sidewalk_width, green, comfort, 1);
@@ -553,7 +613,6 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
     @Override
     protected void onDestroy() {
         locationManager.removeUpdates(locationListener);
-        dm.deleteSoloDataPoints();
         super.onDestroy();
     }
 }

@@ -25,6 +25,7 @@
     <string name="cancel">Zrušit</string>
     <string name="off">OFF</string>
     <string name="on">ON</string>
+    <string name="autofill_data">Vyplňovaná data</string>
     <string-array name="sidewalk_array">
         <item>Bez chodníku</item>
         <item>Chodník na jedné straně</item>

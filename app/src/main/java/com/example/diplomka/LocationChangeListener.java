@@ -13,6 +13,8 @@ public class LocationChangeListener implements LocationListener {
     public static DataModel dm;
     private ILocationListenActivity activity;
     private SoundMeter micRecording;
+    private final double roundingGPS = 1000000;
+    private final double roundingDB = 100;
 
     public LocationChangeListener(Context ctx, ILocationListenActivity activity) {
         dm = new DataModel(ctx);
@@ -23,10 +25,10 @@ public class LocationChangeListener implements LocationListener {
 
     @Override
     public void onLocationChanged(Location loc) {
-        double lat = loc.getLatitude();
-        double lon = loc.getLongitude();
+        double lat = Math.round(loc.getLatitude() * roundingGPS) / roundingGPS;
+        double lon = Math.round(loc.getLongitude() * roundingGPS) / roundingGPS;
         Long ts = System.currentTimeMillis();
-        double noise = micRecording.getAmplitude();
+        double noise = Math.round(micRecording.getAmplitude() * roundingDB) / roundingDB;
 
         String latitude = "Latitude: " + lat;
         Log.v("onLocationChanged", latitude);

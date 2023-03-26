@@ -109,27 +109,6 @@ public class DataModel extends SQLiteOpenHelper {
         return -1;
     }
 
-    public ArrayList<DataPoint> getDataPoints() {
-        SQLiteDatabase db = this.getReadableDatabase();
-
-        Cursor cursor = db.rawQuery("SELECT " + ATR_ID + ", " + ATR_SESSION + ", " + ATR_TS +
-                ", " + ATR_LAT + "," + ATR_LON + ", " + ATR_NOISE + ", " + ATR_PART + " FROM " +
-                TBL_NAME_POINTS, null);
-        ArrayList<DataPoint> dataArrayList = new ArrayList<>();
-
-        if (cursor.moveToFirst()) {
-            do {
-                dataArrayList.add(new DataPoint(cursor.getInt(0), cursor.getInt(1),
-                        cursor.getLong(2), cursor.getFloat(3),
-                        cursor.getFloat(4), cursor.getFloat(5),
-                        cursor.getInt(6)));
-            } while (cursor.moveToNext());
-        }
-
-        cursor.close();
-        return dataArrayList;
-    }
-
     public ArrayList<DataPoint> getDataPoints(int session) {
         SQLiteDatabase db = this.getReadableDatabase();
 
@@ -141,8 +120,8 @@ public class DataModel extends SQLiteOpenHelper {
         if (cursor.moveToFirst()) {
             do {
                 dataArrayList.add(new DataPoint(cursor.getInt(0), cursor.getInt(1),
-                        cursor.getLong(2), cursor.getFloat(3),
-                        cursor.getFloat(4), cursor.getFloat(5),
+                        cursor.getLong(2), cursor.getDouble(3),
+                        cursor.getDouble(4), cursor.getFloat(5),
                         cursor.getInt(6)));
             } while (cursor.moveToNext());
         }
@@ -163,8 +142,8 @@ public class DataModel extends SQLiteOpenHelper {
         if (cursor.moveToFirst()) {
             do {
                 dataArrayList.add(new DataPoint(cursor.getInt(0), cursor.getInt(1),
-                        cursor.getLong(2), cursor.getFloat(3),
-                        cursor.getFloat(4), cursor.getFloat(5),
+                        cursor.getLong(2), cursor.getDouble(3),
+                        cursor.getDouble(4), cursor.getFloat(5),
                         cursor.getInt(6)));
             } while (cursor.moveToNext());
         }
@@ -367,7 +346,7 @@ public class DataModel extends SQLiteOpenHelper {
         }
         cursor.close();
 
-        if (dataArrayList.size() > 1) {
+        if (dataArrayList.size() != 1) {
             Log.v("DataModel", "Error split street data");
             return;
         }

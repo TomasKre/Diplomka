@@ -69,7 +69,6 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
     private DataPoint lastDataPoint;
     private boolean firstPoint = true;
     private double distanceInPart = 0;
-    private int maxPart;
     private Context ctx;
     private View popupAsyncView;
     private PopupWindow popupAsyncWindow;
@@ -88,6 +87,8 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
     private Polyline lastPolyline;
     private boolean newPart = false;
     private int id;
+    private int maxPart = 0;
+    private final double roundingGPS = 1000000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,7 +121,6 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
         dataPoints = new ArrayList<>();
         polylineList = new ArrayList<>();
         markers = new ArrayList<>();
-        maxPart = 0;
 
         if (locationManager == null) {
             locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -224,7 +224,6 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
         }
         if (closestPolyline != null) {
             boolean isMarkered = false;
-            //Možný update přidat k datapointům info jestli je v nich marker? Místo 2 forů
             for (DataPoint marker : markers) {
                 if (nearestPointLine.latitude == marker.lat && nearestPointLine.longitude == marker.lon) {
                     isMarkered = true;
@@ -238,40 +237,27 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
                         // Přidej marker
                         mMap.addMarker(new MarkerOptions().position(nearestPointLine).title(getHumanDate(dataPoint.dt)));
                         markers.add(dataPoint);
-                        ++maxPart;
+                        maxPart = part + 1;
 
                         // Načti body dané session a čášti, uprav na nové části
                         List<DataPoint> oldPoints = dm.getDataPoints(session, dataPoint.part);
                         dm.updateSplitStreetData(dataPoint.id, dataPoint.part, maxPart);
                         dm.updateSplitDataPoints(dataPoint.session, dataPoint.dt, dataPoint.part, maxPart);
 
-                        // Zjištění, zda byla čára user inputovaná
-                        boolean isInput = false;
-                        PolylineOptions polylineOptions;
-                        if (closestPolyline.getColor() != ContextCompat.getColor(this, R.color.denied)) {
-                            isInput = true;
-                            polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.accepted));
-                        } else {
-                            polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.denied));
-                        }
 
-                        // Algoritmus lze zjednodušit oproti onMapReady, jelikož podmínky času a vzdálenosti jsou již splněny
                         // Projdi všechny body dané části a utvoř nové 2 polyline, starou odstraň
+                        PolylineOptions polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.accepted));
                         Polyline polyline;
                         List<LatLng> polylinePoints = closestPolyline.getPoints();
                         for (DataPoint oldPoint : oldPoints) {
-                            LatLng latLng = new LatLng(oldPoint.lat, oldPoint.lon);
+                            LatLng latLng = new LatLng(Math.round(oldPoint.lat * roundingGPS) / roundingGPS, Math.round(oldPoint.lon * roundingGPS) / roundingGPS);
                             if (polylinePoints.size() > 1)
                                 polylinePoints.remove(latLng);
                             polylineOptions.add(latLng);
                             if (oldPoint.lat == nearestPointLine.latitude && oldPoint.lon == nearestPointLine.longitude) {
                                 polyline = mMap.addPolyline(polylineOptions);
                                 polylineList.add(polyline);
-                                if (isInput) {
-                                    polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.accepted));
-                                } else {
-                                    polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.denied));
-                                }
+                                polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.accepted));
                                 polylineOptions.add(latLng);
                             }
                         }
@@ -528,6 +514,7 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
 
     @Override
     public void locationChanged(long timestamp, double latitude, double longitude, double noise, int accuracyInMeters) {
+        DataPoint currentDataPoint = new DataPoint(id, session, timestamp, latitude, longitude, (float) noise, part);
         LatLng position = new LatLng(latitude, longitude);
         if (polylineOptions == null) {
             polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.accepted));
@@ -543,6 +530,7 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
         if (distanceInPart >= maxDistanceM || streetDataChanged) {
             mMap.addMarker(new MarkerOptions().position(position)
                     .title(getHumanDate(timestamp)));
+            markers.add(currentDataPoint);
 
             polylineList.add(lastPolyline);
             polylineOptions = new PolylineOptions().clickable(true)
@@ -551,7 +539,11 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
             lastPolyline = mMap.addPolyline(polylineOptions);
 
             distanceInPart = 0;
-            part++;
+            if (maxPart > part) {
+                part = maxPart + 1;
+            } else {
+                part++;
+            }
             newPart = true;
 
             streetDataChanged = false;
@@ -561,12 +553,17 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
 
         if (firstPoint) {
             firstPoint = false;
+            id = dm.getDataPointsMaxId(session);
             mMap.addMarker(new MarkerOptions().position(position)
                     .title(getHumanDate(timestamp)));
+            // pro první bod přepíše ID po zjištění z DB
+            currentDataPoint.setId(id);
+            markers.add(currentDataPoint);
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 17.0f));
-            id = dm.getDataPointsMaxId(session);
+
             from = id;
             to = from;
+            id++;
             dm.addStreetData(session, from, to, part, sidewalk, sidewalk_width, green, comfort, 1);
         } else {
             id++;
@@ -578,7 +575,7 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
                 dm.addStreetData(session, from, to, part, sidewalk, sidewalk_width, green, comfort, 1);
             }
         }
-        lastDataPoint = new DataPoint(id, session, timestamp, latitude, longitude, (float) noise, part);
+        lastDataPoint = currentDataPoint;
         dataPoints.add(lastDataPoint);
     }
 

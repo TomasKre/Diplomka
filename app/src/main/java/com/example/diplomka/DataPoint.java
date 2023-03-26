@@ -32,4 +32,8 @@ public class DataPoint {
 
     public DataPoint() {
     }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 }

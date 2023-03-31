@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
@@ -27,6 +28,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -158,6 +160,40 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
 
         // Naplnit autofill stringy z file
         fillAutofillArrays();
+    }
+
+    @Override
+    protected void onPause() {
+        Log.v("Activity lifecycle RealtimeMap", "onPause");
+        // Vrácení zhasínání obrazovky na system default
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        // Odregistrace updatů lokace
+        if (locationManager != null)
+            locationManager.removeUpdates(locationListener);
+        // Kontrola a odstranění osamocených data pointů a cest
+        dm.deleteSoloDataPoints();
+        dm.deleteSoloStreetData();
+        super.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        Log.v("Activity lifecycle RealtimeMap", "onResume");
+        if (locationManager == null) {
+            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        }
+        if (locationListener == null) {
+            locationListener = new LocationChangeListener(ctx, this);
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+                    if ((ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+                            && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTimeMs, minDistanceM, locationListener);
+                    }
+                }
+            }
+        }
+        super.onResume();
     }
 
     /**

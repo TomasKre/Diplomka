@@ -406,5 +406,12 @@ public class DataModel extends SQLiteOpenHelper {
         db.execSQL("DELETE FROM " + TBL_NAME_STREETS + " WHERE " + ATR_SESSION +
                 " = " + session);
     }
+
+    public void deleteSoloStreetData() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        Log.v("SQL Delete", "SoloStreets");
+        db.execSQL("DELETE FROM " + TBL_NAME_STREETS + " WHERE " + ATR_FROM +
+                " = " + ATR_TO);
+    }
 }
 

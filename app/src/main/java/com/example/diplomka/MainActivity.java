@@ -186,7 +186,6 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
     @Override
     public void onResume() {
         Log.v("Activity lifecycle", "onResume");
-        dm.deleteSoloDataPoints();
         showData(dm);
         super.onResume();
     }
@@ -199,7 +198,7 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
         // Odregistrace updatů lokace
         if (locationManager != null)
             locationManager.removeUpdates(locationListener);
-        // Kontrola a odstranění osamocených data pointů
+        // Kontrola a odstranění osamocených data pointů a cest
         dm.deleteSoloDataPoints();
         // Nasekání cest
         chopPathIntoParts();

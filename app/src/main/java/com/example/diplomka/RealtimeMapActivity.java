@@ -16,11 +16,11 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -155,8 +155,9 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
             AlertDialog alert = builder.create();
             alert.show();
         });
-        Button street_data_button = findViewById(R.id.street_data_button);
-        street_data_button.setOnClickListener(v -> onStreetDataButtonClick());
+
+        // Naplnit autofill stringy z file
+        fillAutofillArrays();
     }
 
     /**
@@ -344,61 +345,75 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
         popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0);
     }
 
-    private void onStreetDataButtonClick() {
-        // inflate the layout of the popup window
-        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
-        View popupView = inflater.inflate(R.layout.popup_input_data, null);
+    private void fillAutofillArrays() {
+        View autofillView = findViewById(R.id.auto_input_include);
 
-        Spinner spinnerSidewalk = (Spinner) popupView.findViewById(R.id.sidewalk_spinner);
+        Spinner spinnerSidewalk = (Spinner) autofillView.findViewById(R.id.sidewalk_spinner);
         ArrayAdapter<CharSequence> adapterSidewalk = ArrayAdapter.createFromResource(this,
                 R.array.sidewalk_array, android.R.layout.simple_spinner_item);
         adapterSidewalk.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerSidewalk.setAdapter(adapterSidewalk);
         spinnerSidewalk.setSelection(sidewalk);
+        spinnerSidewalk.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                streetDataChanged = true;
+                comfort = spinnerSidewalk.getSelectedItemPosition();
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) { }
+        });
 
-        Spinner spinnerSidewalkWidth = (Spinner) popupView.findViewById(R.id.sidewalk_width_spinner);
+        Spinner spinnerSidewalkWidth = (Spinner) autofillView.findViewById(R.id.sidewalk_width_spinner);
         ArrayAdapter<CharSequence> adapterSidewalkWidth = ArrayAdapter.createFromResource(this,
                 R.array.sidewalk_width_array, android.R.layout.simple_spinner_item);
         adapterSidewalkWidth.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerSidewalkWidth.setAdapter(adapterSidewalkWidth);
         spinnerSidewalkWidth.setSelection(sidewalk_width);
+        spinnerSidewalkWidth.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                streetDataChanged = true;
+                comfort = spinnerSidewalkWidth.getSelectedItemPosition();
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) { }
+        });
 
-        Spinner spinnerGreen = (Spinner) popupView.findViewById(R.id.green_spinner);
+        Spinner spinnerGreen = (Spinner) autofillView.findViewById(R.id.green_spinner);
         ArrayAdapter<CharSequence> adapterGreen = ArrayAdapter.createFromResource(this,
                 R.array.green_array, android.R.layout.simple_spinner_item);
         adapterGreen.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerGreen.setAdapter(adapterGreen);
         spinnerGreen.setSelection(green);
+        spinnerGreen.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                streetDataChanged = true;
+                comfort = spinnerGreen.getSelectedItemPosition();
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) { }
+        });
 
-        Spinner spinnerComfort = (Spinner) popupView.findViewById(R.id.safespace_spinner);
+        Spinner spinnerComfort = (Spinner) autofillView.findViewById(R.id.safespace_spinner);
         ArrayAdapter<CharSequence> adapterComfort = ArrayAdapter.createFromResource(this,
                 R.array.comfort_array, android.R.layout.simple_spinner_item);
         adapterComfort.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerComfort.setAdapter(adapterComfort);
         spinnerComfort.setSelection(comfort);
-
-        // create the popup window
-        int width = LinearLayout.LayoutParams.WRAP_CONTENT;
-        int height = LinearLayout.LayoutParams.WRAP_CONTENT;
-        // focusable true by default
-        final PopupWindow popupWindow = new PopupWindow(popupView, width, height);
-
-        Button buttonSave = (Button) popupView.findViewById(R.id.save_button);
-        Button buttonCancel = (Button) popupView.findViewById(R.id.cancel_button);
-        buttonSave.setOnClickListener(v -> {
-            streetDataChanged = true;
-            sidewalk = spinnerSidewalk.getSelectedItemPosition();
-            sidewalk_width = spinnerSidewalkWidth.getSelectedItemPosition();
-            green = spinnerGreen.getSelectedItemPosition();
-            comfort = spinnerComfort.getSelectedItemPosition();
-            popupWindow.dismiss();
+        spinnerComfort.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                streetDataChanged = true;
+                comfort = spinnerComfort.getSelectedItemPosition();
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) { }
         });
-        buttonCancel.setOnClickListener(v -> popupWindow.dismiss());
-
-        // show the popup window
-        // which view you pass in doesn't matter, it is only used for the window token
-        popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0);
     }
+
+
 
     private void sendStreetDataAndDataPointsToServer(int session) {
         ArrayList<DataPoint> points = dm.getDataPoints(session);

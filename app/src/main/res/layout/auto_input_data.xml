@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="240dp"
+    android:layout_height="200dp"
+    android:background="@drawable/popup_background"
+    android:layout_margin="10dp">
+
+    <TextView
+        android:id="@+id/sidewalk_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/sidewalk_label"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"/>
+
+    <Spinner
+        android:id="@+id/sidewalk_spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/sidewalk_text"
+        android:textAlignment="textEnd"
+        android:layout_marginRight="-5dp"/>
+
+    <TextView
+        android:id="@+id/sidewalk_width_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/sidewalk_width_label"
+        android:layout_below="@+id/sidewalk_spinner"
+        android:layout_marginLeft="10dp"/>
+
+    <Spinner
+        android:id="@+id/sidewalk_width_spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/sidewalk_width_text"
+        android:textAlignment="textEnd"
+        android:layout_marginRight="-5dp"/>
+
+    <TextView
+        android:id="@+id/green_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/green_label"
+        android:layout_below="@+id/sidewalk_width_spinner"
+        android:layout_marginLeft="10dp"/>
+
+    <Spinner
+        android:id="@+id/green_spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/green_text"
+        android:textAlignment="textEnd"
+        android:layout_marginRight="-5dp"/>
+
+    <TextView
+        android:id="@+id/safespace_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/safety_label"
+        android:layout_below="@+id/green_spinner"
+        android:layout_marginLeft="10dp"/>
+
+    <Spinner
+        android:id="@+id/safespace_spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/safespace_text"
+        android:textAlignment="textEnd"
+        android:layout_marginRight="-5dp"/>
+
+</RelativeLayout>

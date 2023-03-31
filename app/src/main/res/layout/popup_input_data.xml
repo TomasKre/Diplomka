@@ -19,7 +19,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
-        android:layout_alignBottom="@+id/sidewalk_text"
+        android:layout_below="@+id/sidewalk_text"
         android:textAlignment="textEnd"
         android:layout_marginRight="-5dp"/>
 
@@ -28,8 +28,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/sidewalk_width_label"
-        android:layout_below="@+id/sidewalk_text"
-        android:layout_marginTop="10dp"
+        android:layout_below="@+id/sidewalk_spinner"
         android:layout_marginLeft="10dp"/>
 
     <Spinner
@@ -37,7 +36,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
-        android:layout_alignBottom="@+id/sidewalk_width_text"
+        android:layout_below="@+id/sidewalk_width_text"
         android:textAlignment="textEnd"
         android:layout_marginRight="-5dp"/>
 
@@ -46,8 +45,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/green_label"
-        android:layout_below="@+id/sidewalk_width_text"
-        android:layout_marginTop="10dp"
+        android:layout_below="@+id/sidewalk_width_spinner"
         android:layout_marginLeft="10dp"/>
 
     <Spinner
@@ -55,7 +53,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
-        android:layout_alignBottom="@+id/green_text"
+        android:layout_below="@+id/green_text"
         android:textAlignment="textEnd"
         android:layout_marginRight="-5dp"/>
 
@@ -64,8 +62,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/safety_label"
-        android:layout_below="@+id/green_text"
-        android:layout_marginTop="10dp"
+        android:layout_below="@+id/green_spinner"
         android:layout_marginLeft="10dp"/>
 
     <Spinner
@@ -73,7 +70,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
-        android:layout_alignBottom="@+id/safespace_text"
+        android:layout_below="@+id/safespace_text"
         android:textAlignment="textEnd"
         android:layout_marginRight="-5dp"/>
 
@@ -82,7 +79,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/save"
-        android:layout_below="@+id/safespace_text"
+        android:layout_below="@+id/safespace_spinner"
         android:layout_alignParentLeft="true"
         android:layout_marginVertical="12dp"
         android:layout_marginLeft="20dp"
@@ -93,7 +90,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/cancel"
-        android:layout_below="@+id/safespace_text"
+        android:layout_below="@+id/safespace_spinner"
         android:layout_alignParentRight="true"
         android:layout_marginVertical="12dp"
         android:layout_marginRight="20dp"

@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
     private DataModel dm;
     private final int minTimeMs = 2500;
     private final int minDistanceM = 5;
-    private int[] permissionsRequests;
+    private int[] permissionsRequests = new int[3];
     private View popupAsyncView;
     private PopupWindow popupAsyncWindow;
     private ListView dataWindow;
@@ -80,8 +80,6 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        permissionsRequests = new int[3]; // TODO: upravit aby se nastavovalo na 0 při zapnutí aplikace pokud jsou perms -1
 
         Button locationButton = findViewById(R.id.location_permission);
         Button microphoneButton = findViewById(R.id.microphone_permission);
@@ -189,6 +187,7 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
     @Override
     public void onResume() {
         Log.v("Activity lifecycle", "onResume");
+        checkPermissionButtons();
         showData(dm);
         super.onResume();
     }

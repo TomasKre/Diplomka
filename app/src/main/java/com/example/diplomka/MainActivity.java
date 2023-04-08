@@ -10,13 +10,16 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -247,9 +250,9 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
             case MY_PERMISSIONS_RECORD_AUDIO: {
                 if (permissionsRequests[MY_PERMISSIONS_RECORD_AUDIO - 1]++ == 0) {
                     if (!(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED))
-                        Toast.makeText(this, "Bez záznamu hlasitosti nebude měření fungovat.", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, R.string.microphone_perm_deny, Toast.LENGTH_LONG).show();
                 } else {
-                    Toast.makeText(this, "Nelze opakovaně žádat o stejná oprávnění. Prosím, povolte oprávnění v nastevení telefonu.", Toast.LENGTH_LONG).show();
+                    sendUserToSettings();
                 }
                 checkPermissionMicrophone();
                 break;
@@ -257,9 +260,9 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
             case MY_PERMISSIONS_ACCESS_LOCATION: {
                 if (permissionsRequests[MY_PERMISSIONS_ACCESS_LOCATION - 1]++ == 0) {
                     if (!(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED))
-                        Toast.makeText(this, "Bez přesné polohy nebude měření fungovat.", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, R.string.location_perm_deny, Toast.LENGTH_LONG).show();
                 } else {
-                    Toast.makeText(this, "Nelze opakovaně žádat o stejná oprávnění. Prosím, povolte oprávnění v nastevení telefonu.", Toast.LENGTH_LONG).show();
+                    sendUserToSettings();
                 }
                 checkPermissionLocation();
                 break;
@@ -267,14 +270,39 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
             case MY_PERMISSIONS_EXTERNAL_STORAGE: {
                 if (permissionsRequests[MY_PERMISSIONS_EXTERNAL_STORAGE - 1]++ == 0) {
                     if (!(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED))
-                        Toast.makeText(this, "Bez použití externího úložiště budou data ukládána v paměti telefonu.", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, R.string.storage_perm_deny, Toast.LENGTH_LONG).show();
                 } else {
-                    Toast.makeText(this, "Nelze opakovaně žádat o stejná oprávnění. Prosím, povolte oprávnění v nastevení telefonu.", Toast.LENGTH_LONG).show();
+                    sendUserToSettings();
                 }
                 checkPermissionStorage();
                 break;
             }
         }
+    }
+
+    public void sendUserToSettings() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Oprávnění k lokaci");
+        builder.setMessage("Nelze opakovaně žádat o stejná oprávnění. Chcete povolit oprávnění v nastavení telefonu?");
+        builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                // User clicked "Yes"
+                // Send them to settings
+                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        Uri.fromParts("package", getPackageName(), null));
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        });
+        builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                // User clicked "No"
+                // Do nothing
+            }
+        });
+        builder.show();
     }
 
     public void showData(DataModel dm) {

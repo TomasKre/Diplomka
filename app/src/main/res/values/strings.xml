@@ -26,6 +26,11 @@
     <string name="off">OFF</string>
     <string name="on">ON</string>
     <string name="autofill_data">Vyplňovaná data</string>
+    <string name="no">Ne</string>
+    <string name="yes">Ano</string>
+    <string name="storage_perm_deny">Bez použití externího úložiště budou data ukládána v paměti telefonu.</string>
+    <string name="location_perm_deny">Bez přesné polohy nebude měření fungovat.</string>
+    <string name="microphone_perm_deny">Bez záznamu hlasitosti nebude měření fungovat.</string>
     <string-array name="sidewalk_array">
         <item>Bez chodníku</item>
         <item>Chodník na jedné straně</item>

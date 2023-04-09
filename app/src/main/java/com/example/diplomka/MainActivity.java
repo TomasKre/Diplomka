@@ -330,9 +330,18 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
     public void showData(DataModel dm) {
         ArrayList<String> dataLines = dm.getGroupedDataPointsAsStrings();
 
+        // Calculate Y scroll offset
+        int scrolly = 0;
+        View c = dataWindow.getChildAt(0);
+        if (c != null) {
+            scrolly = -c.getTop() + dataWindow.getFirstVisiblePosition() * c.getHeight();
+        }
         final ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_list_item_1, android.R.id.text1, dataLines);
         dataWindow.setAdapter(adapter);
+
+        // Set Y scroll offset
+        dataWindow.setScrollY(scrolly);
 
         dataWindow.setOnItemClickListener((adapterView, view, position, l) -> {
             String value = adapter.getItem(position);

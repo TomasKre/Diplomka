@@ -42,6 +42,7 @@ import com.example.diplomka.databinding.ActivityMapBinding;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -107,15 +108,15 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         Button send_button = findViewById(R.id.send_button);
         send_button.setOnClickListener(v -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Odeslat data");
-            builder.setMessage("Opravdu chcete odeslat záznamy s id " + session + " včetně vyplněných dat?");
+            builder.setTitle(R.string.send_data_title);
+            builder.setMessage(MessageFormat.format(getString(R.string.send_data_message_long), session));
 
-            builder.setPositiveButton("Ano", (dialog, which) -> {
+            builder.setPositiveButton(R.string.yes, (dialog, which) -> {
                 sendStreetDataAndDataPointsToServer(session);
                 dialog.dismiss();
                 createLoadingPopup();
             });
-            builder.setNegativeButton("Ne", (dialog, which) -> {
+            builder.setNegativeButton(R.string.no, (dialog, which) -> {
                 // Do nothing
                 dialog.dismiss();
             });
@@ -271,7 +272,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             }
         }
         if (minDistanceLines > 100.0F) {
-            Toast.makeText(this, "Zaznamenán long click dále než 100 m od nejbližšího bodu.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.map_faraway_long_click, Toast.LENGTH_LONG).show();
             return;
         }
         if (closestPolyline != null) {
@@ -340,7 +341,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     }
                 }
             } else {
-                Toast.makeText(this, "Zaznamenán long click na marker", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, R.string.map_marker_long_click, Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -498,7 +499,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             throw new RuntimeException(e);
         }
 
-        HTTP http = new HTTP(this,"http://ulice.nti.tul.cz:5000/upload/fulldata");
+        HTTP http = new HTTP(this,getString(R.string.target_server_upload_fulldata));
         AsyncTask<String, Void, String> result = http.execute(arrayToJson);
         Log.v("HTTP Async", result.getStatus().toString());
     }
@@ -537,7 +538,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         // Change info text
         TextView textView = popupAsyncView.findViewById(R.id.info_text);
-        textView.setText("Odesláno, díky!");
+        textView.setText(R.string.HTTP_send_success);
 
         dm.deleteDataPointsBySession(session);
         dm.deleteStreetDataBySession(session);
@@ -559,7 +560,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         // Change info text
         TextView textView = popupAsyncView.findViewById(R.id.info_text);
-        textView.setText("Odeslání se nezdařilo.");
+        textView.setText(R.string.HTTP_send_unsuccess);
 
         Handler handler = new Handler();
         handler.postDelayed(() -> {

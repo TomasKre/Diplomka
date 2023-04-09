@@ -41,6 +41,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -101,34 +102,27 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
         realtimeMapButton.setOnClickListener(v -> openRealtimeMapIntent());
         lock.setOnTouchListener((v, event) -> lockTouchEvent((ImageView) v, event));
         infoButton.setOnClickListener(v -> infoButtonClickListener());
-        onOffSwitch.setOnClickListener(v -> {
-            Log.d("Switch Button", "onClick");
-            onOffSwitchClickListener((Switch) v);
-        });
+        onOffSwitch.setOnClickListener(v -> onOffSwitchClickListener((Switch) v));
+        onOffSwitch.setOnTouchListener((v, event) -> onOffSwitchTouchEvent((Switch) v, event));
+    }
 
-        onOffSwitch.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                Switch switchSlider = (Switch) v;
-                // Normální chování view (posun atp.)
-                switchSlider.onTouchEvent(event);
-                // K změně stavu slouží click event, toto je ošetření Touch eventu
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        // Uložit stav na začátku move eventu
-                        Log.d("Switch Button", "onTouch Event:DOWN");
-                        checked = switchSlider.isChecked();
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        // Vrátit do původního stavu
-                        Log.d("Switch Button", "onTouch Event:UP");
-                        switchSlider.setChecked(checked);
-                        break;
-                }
-                return true;
-            }
-        });
-
+    private boolean onOffSwitchTouchEvent(Switch switchSlider, MotionEvent event) {
+        // Normální chování view (posun atp.)
+        switchSlider.onTouchEvent(event);
+        // K změně stavu slouží click event, toto je ošetření Touch eventu
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                // Uložit stav na začátku move eventu
+                Log.d("Switch Button", "onTouch Event:DOWN");
+                checked = switchSlider.isChecked();
+                break;
+            case MotionEvent.ACTION_UP:
+                // Vrátit do původního stavu
+                Log.d("Switch Button", "onTouch Event:UP");
+                switchSlider.setChecked(checked);
+                break;
+        }
+        return true;
     }
 
     private boolean lockTouchEvent(ImageView lock, MotionEvent event) {
@@ -310,8 +304,8 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
 
     public void sendUserToSettings() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Oprávnění k lokaci");
-        builder.setMessage("Nelze opakovaně žádat o stejná oprávnění. Chcete povolit oprávnění v nastavení telefonu?");
+        builder.setTitle(R.string.send_to_settings_title);
+        builder.setMessage(R.string.send_to_settings_message);
         builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
@@ -351,15 +345,15 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
                     openMapIntent(value);
                 } else if (send.isChecked()) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                    builder.setTitle("Odeslat data");
-                    builder.setMessage("Opravdu chcete odeslat záznamy s id " + sessionOfItem + "?");
+                    builder.setTitle(R.string.send_data_title);
+                    builder.setMessage(MessageFormat.format(getString(R.string.send_data_message_short), sessionOfItem));
 
-                    builder.setPositiveButton("Ano", (dialog, which) -> {
+                    builder.setPositiveButton(R.string.yes, (dialog, which) -> {
                         sendDataPointsToServer();
                         dialog.dismiss();
                         createLoadingPopup();
                     });
-                    builder.setNegativeButton("Ne", (dialog, which) -> {
+                    builder.setNegativeButton(R.string.no, (dialog, which) -> {
                         // Do nothing
                         dialog.dismiss();
                     });
@@ -367,16 +361,16 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
                     alert.show();
                 } else if (delete.isChecked()) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                    builder.setTitle("Smazat záznam");
-                    builder.setMessage("Opravdu chcete smazat záznam " + sessionOfItem + "?");
+                    builder.setTitle(R.string.delete_data_title);
+                    builder.setMessage(MessageFormat.format(getString(R.string.delete_data_message), sessionOfItem));
 
-                    builder.setPositiveButton("Ano", (dialog, which) -> {
+                    builder.setPositiveButton(R.string.yes, (dialog, which) -> {
                         dm.deleteDataPointsBySession(sessionOfItem);
                         dm.deleteStreetDataBySession(sessionOfItem);
                         showData(dm);
                         dialog.dismiss();
                     });
-                    builder.setNegativeButton("Ne", (dialog, which) -> {
+                    builder.setNegativeButton(R.string.no, (dialog, which) -> {
                         // Do nothing
                         dialog.dismiss();
                     });
@@ -384,7 +378,7 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
                     alert.show();
                 }
             } else {
-                Toast.makeText(this, "Nelze rozkliknout právě probíhající měření.", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, R.string.click_on_active_measuring, Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -406,13 +400,13 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
                     intent.putExtra("session", session);
                     startActivity(intent);
                 } else {
-                    Toast.makeText(this, "Nejsou povolena všechna oprávnění.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, R.string.no_permissions_error, Toast.LENGTH_LONG).show();
                 }
             } else {
-                Toast.makeText(this, "Nejsou povolena všechna oprávnění.", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, R.string.no_permissions_error, Toast.LENGTH_LONG).show();
             }
         } else {
-            Toast.makeText(this, "Nejsou povolena všechna oprávnění.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.no_permissions_error, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -423,10 +417,8 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
 
     @SuppressLint("MissingPermission") // permission v manifestu je, zřejmě nějaký bug, protože ze začátku se nezobrazovalo
     private void onOffSwitchClickListener(Switch v) {
-        Log.d("Switch Button", "onOff function");
         Log.d("Switch Button", "Checked:" + v.isChecked());
-        return;
-        /*if(v.isChecked()) {
+        if(v.isChecked()) {
             if (locationManager == null)
                 locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
             if (locationListener == null)
@@ -445,7 +437,7 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
                     }
                 }
             }
-            Toast.makeText(this, "Nejsou povolena všechna oprávnění.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.no_permissions_error, Toast.LENGTH_LONG).show();
             v.setChecked(false);
         } else {
             // Vrácení zhasínání obrazovky na system default
@@ -463,7 +455,7 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
             incrementSession();
             // Překreslení dat
             showData(dm);
-        }*/
+        }
     }
 
     private void chopPathIntoParts() {
@@ -581,7 +573,7 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
             throw new RuntimeException(e);
         }
 
-        HTTP http = new HTTP(this,"http://ulice.nti.tul.cz:5000/upload/points");
+        HTTP http = new HTTP(this,getString(R.string.target_server_upload_points));
         AsyncTask<String, Void, String> result = http.execute(arrayToJson);
         Log.v("HTTP Async", result.getStatus().toString());
     }
@@ -620,7 +612,7 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
 
         // Change info text
         TextView textView = popupAsyncView.findViewById(R.id.info_text);
-        textView.setText("Odesláno, díky!");
+        textView.setText(R.string.HTTP_send_success);
 
         dm.deleteDataPointsBySession(session);
         dm.deleteStreetDataBySession(session);
@@ -644,7 +636,7 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
 
         // Change info text
         TextView textView = popupAsyncView.findViewById(R.id.info_text);
-        textView.setText("Odeslání se nezdařilo.");
+        textView.setText(R.string.HTTP_send_unsuccess);
 
         Handler handler = new Handler();
         handler.postDelayed(() -> {

@@ -31,6 +31,22 @@
     <string name="storage_perm_deny">Bez použití externího úložiště budou data ukládána v paměti telefonu.</string>
     <string name="location_perm_deny">Bez přesné polohy nebude měření fungovat.</string>
     <string name="microphone_perm_deny">Bez záznamu hlasitosti nebude měření fungovat.</string>
+    <string name="send_to_settings_title">Oprávnění k lokaci</string>
+    <string name="send_to_settings_message">Nelze opakovaně žádat o stejná oprávnění. Chcete povolit oprávnění v nastavení telefonu?</string>
+    <string name="HTTP_send_success">Odesláno, díky!</string>
+    <string name="HTTP_send_unsuccess">Odeslání se nezdařilo.</string>
+    <string name="HTTP_send_sending">Odesílám data.</string>
+    <string name="target_server_upload_points">http://ulice.nti.tul.cz:5000/upload/points</string>
+    <string name="target_server_upload_fulldata">http://ulice.nti.tul.cz:5000/upload/fulldata</string>
+    <string name="map_marker_long_click">Zaznamenán long click na marker</string>
+    <string name="map_faraway_long_click">Zaznamenán long click dále než 100 m od nejbližšího bodu.</string>
+    <string name="send_data_title">Odeslat data</string>
+    <string name="send_data_message_long">Opravdu chcete odeslat záznamy s id {0} včetně vyplněných dat?</string>
+    <string name="no_permissions_error">Nejsou povolena všechna oprávnění.</string>
+    <string name="send_data_message_short">Opravdu chcete odeslat záznamy s id {0}?</string>
+    <string name="delete_data_title">Smazat záznam</string>
+    <string name="delete_data_message">Opravdu chcete smazat záznam {0}?</string>
+    <string name="click_on_active_measuring">Nelze otevřít právě probíhající měření.</string>
     <string-array name="sidewalk_array">
         <item>Bez chodníku</item>
         <item>Chodník na jedné straně</item>

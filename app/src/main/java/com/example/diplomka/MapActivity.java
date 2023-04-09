@@ -363,6 +363,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             }
         }
 
+        dataStreets = dm.getStreetData(session);
         StreetData streetDataClicked = null;
         for (StreetData streetData:dataStreets) {
             if (streetData.from == from && streetData.to == to)

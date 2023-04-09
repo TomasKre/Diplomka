@@ -519,6 +519,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         // Start animation
         imageView.startAnimation(anim);
 
+        // Set info text
+        TextView textView = popupAsyncView.findViewById(R.id.info_text);
+        textView.setText(R.string.HTTP_send_sending);
+
         // create the popup window
         int width = LinearLayout.LayoutParams.WRAP_CONTENT;
         int height = LinearLayout.LayoutParams.WRAP_CONTENT;

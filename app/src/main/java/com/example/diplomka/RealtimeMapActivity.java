@@ -51,6 +51,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,7 +64,6 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
     private LocationListener locationListener;
     private int session;
     private List<DataPoint> dataPoints;
-    private List<StreetData> dataStreets;
     private List<Polyline> polylineList;
     private List<DataPoint> markers;
     private PolylineOptions polylineOptions;
@@ -142,15 +142,15 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
         Button send_button = findViewById(R.id.send_button);
         send_button.setOnClickListener(v -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Odeslat data");
-            builder.setMessage("Opravdu chcete odeslat záznamy s id " + session + " včetně vyplněných dat?");
+            builder.setTitle(R.string.send_data_title);
+            builder.setMessage(MessageFormat.format(getResources().getString(R.string.send_data_message_long), session));
 
-            builder.setPositiveButton("Ano", (dialog, which) -> {
+            builder.setPositiveButton(getResources().getString(R.string.yes), (dialog, which) -> {
                 sendStreetDataAndDataPointsToServer(session);
                 dialog.dismiss();
                 createLoadingPopup();
             });
-            builder.setNegativeButton("Ne", (dialog, which) -> {
+            builder.setNegativeButton(getResources().getString(R.string.no), (dialog, which) -> {
                 // Do nothing
                 dialog.dismiss();
             });
@@ -207,7 +207,7 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        // Pro IDE, aby neřvalo, že není permission, když vez permissionu se ani nedá tato třída vytvořit v mainu
+        // Pro IDE, aby neřvalo, že není permission, když bez permissionu se ani nedá tato třída vytvořit v mainu
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true);
         }
@@ -256,7 +256,7 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
             }
         }
         if (minDistanceLines > 100.0F) {
-            Toast.makeText(this, "Zaznamenán long click dále než 100 m od nejbližšího bodu.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.map_faraway_long_click, Toast.LENGTH_LONG).show();
             return;
         }
         if (closestPolyline != null) {
@@ -308,7 +308,7 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
                     }
                 }
             } else {
-                Toast.makeText(this, "Zaznamenán long click na marker", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, R.string.map_marker_long_click, Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -449,8 +449,6 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
         });
     }
 
-
-
     private void sendStreetDataAndDataPointsToServer(int session) {
         ArrayList<DataPoint> points = dm.getDataPoints(session);
         ArrayList<StreetData> streets = dm.getStreetData(session);
@@ -492,7 +490,7 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
             throw new RuntimeException(e);
         }
 
-        HTTP http = new HTTP(this,"http://ulice.nti.tul.cz:5000/upload/fulldata");
+        HTTP http = new HTTP(this, getResources().getString(R.string.target_server_upload_fulldata));
         AsyncTask<String, Void, String> result = http.execute(arrayToJson);
         Log.v("HTTP Async", result.getStatus().toString());
     }
@@ -511,6 +509,10 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
 
         // Start animation
         imageView.startAnimation(anim);
+
+        // Set info text
+        TextView textView = popupAsyncView.findViewById(R.id.info_text);
+        textView.setText(R.string.HTTP_send_sending);
 
         // create the popup window
         int width = LinearLayout.LayoutParams.WRAP_CONTENT;
@@ -531,7 +533,7 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
 
         // Change info text
         TextView textView = popupAsyncView.findViewById(R.id.info_text);
-        textView.setText("Odesláno, díky!");
+        textView.setText(R.string.HTTP_send_success);
 
         dm.deleteDataPointsBySession(session);
         dm.deleteStreetDataBySession(session);
@@ -553,7 +555,7 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
 
         // Change info text
         TextView textView = popupAsyncView.findViewById(R.id.info_text);
-        textView.setText("Odeslání se nezdařilo.");
+        textView.setText(R.string.HTTP_send_unsuccess);
 
         Handler handler = new Handler();
         handler.postDelayed(() -> {

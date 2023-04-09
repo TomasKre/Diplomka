@@ -30,7 +30,6 @@ public class SoundMeter {
             audioRecord.startRecording();
             return;
         }
-        Toast.makeText(context, "Není povoleno nahrávání zvuku.", Toast.LENGTH_LONG).show();
     }
 
     public void stop() {

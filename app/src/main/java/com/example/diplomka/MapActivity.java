@@ -363,6 +363,12 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             }
         }
 
+        StreetData streetDataClicked = null;
+        for (StreetData streetData:dataStreets) {
+            if (streetData.from == from && streetData.to == to);
+                streetDataClicked = streetData;
+        }
+
         // inflate the layout of the popup window
         LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
         View popupView = inflater.inflate(R.layout.popup_input_data, null);
@@ -390,6 +396,13 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 R.array.comfort_array, android.R.layout.simple_spinner_item);
         adapterComfort.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerComfort.setAdapter(adapterComfort);
+
+        if (streetDataClicked != null) {
+            spinnerSidewalk.setSelection(streetDataClicked.sidewalk);
+            spinnerSidewalkWidth.setSelection(streetDataClicked.sidewalk_width);
+            spinnerGreen.setSelection(streetDataClicked.green);
+            spinnerSidewalkWidth.setSelection(streetDataClicked.sidewalk_width);
+        }
 
         // create the popup window
         int width = LinearLayout.LayoutParams.WRAP_CONTENT;

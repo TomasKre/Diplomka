@@ -593,8 +593,12 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
         polylineOptions.add(position);
         lastPolyline = mMap.addPolyline(polylineOptions);
 
-        if (lastDataPoint != null)
+        if (lastDataPoint != null) {
             distanceInPart += getDistanceInMeters(lastDataPoint.lat, latitude, lastDataPoint.lon, longitude);
+        } else {
+            // Nutno pro první bod vrátit na false, jelikož inicializace tabulky nastaví na true
+            streetDataChanged = false;
+        }
 
         if (distanceInPart >= maxDistanceM || streetDataChanged) {
             mMap.addMarker(new MarkerOptions().position(position)

@@ -44,6 +44,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Timer;
 
 import android.content.Intent;
 
@@ -73,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
     // čas a vzdálenost pro nasekání cest
     private final int maxTimeMs = 300000;
     private final float maxDistanceM = 100;
+    private boolean checked = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,7 +101,34 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
         realtimeMapButton.setOnClickListener(v -> openRealtimeMapIntent());
         lock.setOnTouchListener((v, event) -> lockTouchEvent((ImageView) v, event));
         infoButton.setOnClickListener(v -> infoButtonClickListener());
-        onOffSwitch.setOnClickListener(v -> onOffSwitchClickListener((Switch) v));
+        onOffSwitch.setOnClickListener(v -> {
+            Log.d("Switch Button", "onClick");
+            onOffSwitchClickListener((Switch) v);
+        });
+
+        onOffSwitch.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                Switch switchSlider = (Switch) v;
+                // Normální chování view (posun atp.)
+                switchSlider.onTouchEvent(event);
+                // K změně stavu slouží click event, toto je ošetření Touch eventu
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        // Uložit stav na začátku move eventu
+                        Log.d("Switch Button", "onTouch Event:DOWN");
+                        checked = switchSlider.isChecked();
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        // Vrátit do původního stavu
+                        Log.d("Switch Button", "onTouch Event:UP");
+                        switchSlider.setChecked(checked);
+                        break;
+                }
+                return true;
+            }
+        });
+
     }
 
     private boolean lockTouchEvent(ImageView lock, MotionEvent event) {
@@ -394,39 +423,36 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
 
     @SuppressLint("MissingPermission") // permission v manifestu je, zřejmě nějaký bug, protože ze začátku se nezobrazovalo
     private void onOffSwitchClickListener(Switch v) {
-        if (locationManager == null) {
-            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        }
-        if (locationListener == null) {
-            locationListener = new LocationChangeListener(this, this);
-        }
-        if(v.isChecked()) {
-            try {
-                // Pokud je vše povoleno, začni měřit
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                        && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
-                        if ((ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
-                                && ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                            // Nastavení flagu obrazovky, aby nezhasínala
-                            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                            // Registrace listeneru na location updaty
-                            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTimeMs, minDistanceM, locationListener);
-                            return;
-                        }
+        Log.d("Switch Button", "onOff function");
+        Log.d("Switch Button", "Checked:" + v.isChecked());
+        return;
+        /*if(v.isChecked()) {
+            if (locationManager == null)
+                locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            if (locationListener == null)
+                locationListener = new LocationChangeListener(this, this);
+            // Pokud je vše povoleno, začni měřit
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+                    if ((ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+                            && ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                        // Nastavení flagu obrazovky, aby nezhasínala
+                        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                        // Registrace listeneru na location updaty
+                        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTimeMs, minDistanceM, locationListener);
+                        return;
                     }
                 }
-                Toast.makeText(this, "Nejsou povolena všechna oprávnění.", Toast.LENGTH_LONG).show();
-                v.setChecked(false);
-            } catch (Exception e) {
-                Toast.makeText(this, "Error switch" + e.getMessage(), Toast.LENGTH_LONG).show();
-                v.setChecked(false);
             }
+            Toast.makeText(this, "Nejsou povolena všechna oprávnění.", Toast.LENGTH_LONG).show();
+            v.setChecked(false);
         } else {
             // Vrácení zhasínání obrazovky na system default
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             // Odregistrace updatů lokace
-            locationManager.removeUpdates(locationListener);
+            if (locationManager != null)
+                locationManager.removeUpdates(locationListener);
             // Kontrola a odstranění osamocených data pointů
             dm.deleteSoloDataPoints();
             // Nasekání cest
@@ -437,7 +463,7 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
             incrementSession();
             // Překreslení dat
             showData(dm);
-        }
+        }*/
     }
 
     private void chopPathIntoParts() {

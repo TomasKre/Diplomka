@@ -365,7 +365,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         StreetData streetDataClicked = null;
         for (StreetData streetData:dataStreets) {
-            if (streetData.from == from && streetData.to == to);
+            if (streetData.from == from && streetData.to == to)
                 streetDataClicked = streetData;
         }
 

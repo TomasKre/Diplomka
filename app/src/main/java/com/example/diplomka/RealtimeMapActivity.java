@@ -64,6 +64,7 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
     private LocationListener locationListener;
     private int session;
     private List<DataPoint> dataPoints;
+    private List<StreetData> streetData;
     private List<Polyline> polylineList;
     private List<DataPoint> markers;
     private PolylineOptions polylineOptions;
@@ -280,7 +281,7 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
                         List<DataPoint> oldPoints = dm.getDataPoints(session, dataPoint.part);
                         dm.updateSplitStreetData(dataPoint.id, dataPoint.part, maxPart);
                         dm.updateSplitDataPoints(dataPoint.session, dataPoint.dt, dataPoint.part, maxPart);
-
+                        // TODO: při rozdělení aktualizovat i listy streetů a datapointů
 
                         // Projdi všechny body dané části a utvoř nové 2 polyline, starou odstraň
                         PolylineOptions polylineOptions = new PolylineOptions().clickable(true).color(ContextCompat.getColor(this, R.color.accepted));
@@ -319,6 +320,28 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
         LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
         View popupView = inflater.inflate(R.layout.popup_input_data, null);
 
+        List<LatLng> geoPoints = polyline.getPoints();
+        LatLng pointA = geoPoints.get(0);
+        LatLng pointB = geoPoints.get(geoPoints.size() - 1);
+        int from = 0, to = 0;
+        // Asi není nejelegantnější řešení, ale cesty nejspíše nebudou mít počet bodů v řádech tisíců
+        // Jsou pouze z jedné session
+        for (DataPoint dataPoint : dataPoints) {
+            if(dataPoint.lat == pointA.latitude && dataPoint.lon == pointA.longitude) {
+                from = dataPoint.id;
+            }
+            if(dataPoint.lat == pointB.latitude && dataPoint.lon == pointB.longitude) {
+                to = dataPoint.id;
+            }
+        }
+
+        ArrayList<StreetData> dataStreets = dm.getStreetData(session);
+        StreetData streetDataClicked = null;
+        for (StreetData streetData:dataStreets) {
+            if (streetData.from == from && streetData.to == to);
+            streetDataClicked = streetData;
+        }
+
         Spinner spinnerSidewalk = (Spinner) popupView.findViewById(R.id.sidewalk_spinner);
         ArrayAdapter<CharSequence> adapterSidewalk = ArrayAdapter.createFromResource(this,
                 R.array.sidewalk_array, android.R.layout.simple_spinner_item);
@@ -343,6 +366,13 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
         adapterComfort.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerComfort.setAdapter(adapterComfort);
 
+        if (streetDataClicked != null) {
+            spinnerSidewalk.setSelection(streetDataClicked.sidewalk);
+            spinnerSidewalkWidth.setSelection(streetDataClicked.sidewalk_width);
+            spinnerGreen.setSelection(streetDataClicked.green);
+            spinnerSidewalkWidth.setSelection(streetDataClicked.sidewalk_width);
+        }
+
         // create the popup window
         int width = LinearLayout.LayoutParams.WRAP_CONTENT;
         int height = LinearLayout.LayoutParams.WRAP_CONTENT;
@@ -350,20 +380,6 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
         final PopupWindow popupWindow = new PopupWindow(popupView, width, height);
 
         Button buttonSave = (Button) popupView.findViewById(R.id.save_button);
-        List<LatLng> geoPoints = polyline.getPoints();
-        LatLng pointA = geoPoints.get(0);
-        LatLng pointB = geoPoints.get(geoPoints.size() - 1);
-        int from = 0, to = 0;
-        // Asi není nejelegantnější řešení, ale cesty nejspíše nebudou mít počet bodů v řádech tisíců
-        // Jsou pouze z jedné session
-        for (DataPoint dataPoint : dataPoints) {
-            if(dataPoint.lat == pointA.latitude && dataPoint.lon == pointA.longitude) {
-                from = dataPoint.id;
-            }
-            if(dataPoint.lat == pointB.latitude && dataPoint.lon == pointB.longitude) {
-                to = dataPoint.id;
-            }
-        }
         int finalFrom = from;
         int finalTo = to;
         buttonSave.setOnClickListener(v -> {

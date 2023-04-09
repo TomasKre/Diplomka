@@ -410,7 +410,7 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 streetDataChanged = true;
-                comfort = spinnerSidewalk.getSelectedItemPosition();
+                sidewalk = spinnerSidewalk.getSelectedItemPosition();
             }
             @Override
             public void onNothingSelected(AdapterView<?> parent) { }
@@ -426,7 +426,7 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 streetDataChanged = true;
-                comfort = spinnerSidewalkWidth.getSelectedItemPosition();
+                sidewalk_width = spinnerSidewalkWidth.getSelectedItemPosition();
             }
             @Override
             public void onNothingSelected(AdapterView<?> parent) { }
@@ -442,7 +442,7 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 streetDataChanged = true;
-                comfort = spinnerGreen.getSelectedItemPosition();
+                green = spinnerGreen.getSelectedItemPosition();
             }
             @Override
             public void onNothingSelected(AdapterView<?> parent) { }

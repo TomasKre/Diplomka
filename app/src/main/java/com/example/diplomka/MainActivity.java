@@ -56,6 +56,7 @@ import com.google.android.gms.maps.model.LatLng;
 
 public class MainActivity extends AppCompatActivity implements ISendDataActivity, ILocationListenActivity {
 
+    // TODO: Change package name from Diplomka
     private LocationManager locationManager;
     private LocationListener locationListener;
     private int session = 0;

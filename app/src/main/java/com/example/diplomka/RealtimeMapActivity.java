@@ -179,6 +179,8 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
 
     @Override
     public void onResume() {
+        // Nastavení flagu obrazovky, aby nezhasínala
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         Log.v("Activity lifecycle RealtimeMap", "onResume");
         if (locationManager == null) {
             locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);

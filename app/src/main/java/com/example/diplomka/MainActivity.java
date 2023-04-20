@@ -664,8 +664,8 @@ public class MainActivity extends AppCompatActivity implements ISendDataActivity
     public void locationChanged(long timestamp, double latitude, double longitude, double noise, int accuracyInMeters) {
         dm.addDataPoints(timestamp, session, latitude, longitude, noise, 0);
         if (accuracyInMeters >= 0) {
-            TextView accuracyTextView = findViewById(R.id.accuracy_value);
-            accuracyTextView.setText(Integer.toString(accuracyInMeters));
+            TextView accuracyTextView = findViewById(R.id.accuracy);
+            accuracyTextView.setText(String.format(getString(R.string.accuracy_with_value) , accuracyInMeters));
         }
         showData(dm);
     }

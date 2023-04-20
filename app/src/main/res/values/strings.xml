@@ -12,9 +12,8 @@
     <string name="storage">Úložiště</string>
     <string name="application_permissions">Oprávnění aplikace:</string>
     <string name="measurement_switch">Měření zapnuto:</string>
-    <string name="accuracy_info"><![CDATA[S přesností > 95 % v okruhu]]></string>
-    <string name="accuracy_value">__</string>
-    <string name="accuracy_meters">metrů</string>
+    <string name="accuracy"><![CDATA[S přesností přes 95 % v okruhu __ metrů]]></string>
+    <string name="accuracy_with_value">S přesností přes 95 %% v okruhu %d metrů</string>
     <string name="realtime_map_button">Měření v \nreálném čase</string>
     <string name="data_sending">Odesílání dat</string>
     <string name="sidewalk_label">Přítomnost chodníku:</string>

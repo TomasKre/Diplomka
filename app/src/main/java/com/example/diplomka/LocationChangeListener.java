@@ -49,13 +49,15 @@ public class LocationChangeListener implements LocationListener {
                 int acc = Math.round(2 * loc.getAccuracy());
                 activity.locationChanged(ts, lat, lon, noise, acc);
             } else {
-                activity.locationChanged(ts, lat, lon, noise,-1);
+                activity.locationChanged(ts, lat, lon, noise, -1);
             }
         }
     }
 
     @Override
-    public void onProviderDisabled(String provider) {}
+    public void onProviderDisabled(String provider) {
+        micRecording.stop(); // netestováno
+    }
 
     @Override
     public void onProviderEnabled(String provider) {}

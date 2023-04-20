@@ -36,10 +36,20 @@ public class DataModel extends SQLiteOpenHelper {
     public static final String ATR_COMFORT = "comfort";
     public static final String ATR_INPUT = "user_input";
 
-    public DataModel(Context ctx){
+    public static Context context;
+
+    public DataModel(Context ctx) {
         super(ctx, DB_NAME, null, DB_VERSION);
+        context = ctx;
     }
 
+    /* uložení na kartu
+    public DatabaseHelper(final Context context) {
+    super(context, Environment.getExternalStorageDirectory()
+            + File.separator + FILE_DIR
+            + File.separator + DATABASE_NAME, null, DATABASE_VERSION);
+    }
+     */
     @Override
     public void onCreate(SQLiteDatabase db) {
         String query;
@@ -160,12 +170,12 @@ public class DataModel extends SQLiteOpenHelper {
 
         DecimalFormat formatterGPS = new DecimalFormat("#0.000000");
         DecimalFormat formatterDB = new DecimalFormat("#0.00");
-        String pattern = "dd.MM.yyyy hh:mm:ss";
+        String pattern = "dd.MM.yyyy HH:mm:ss";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
         if (cursor.moveToFirst()) {
             do {
                 String date = simpleDateFormat.format(new Date(cursor.getLong(2)));
-                dataArrayList.add(cursor.getInt(1) + ") " + date.toString() + " – " +
+                dataArrayList.add(cursor.getInt(1) + ") " + date + " – " +
                         formatterGPS.format(cursor.getDouble(3)) + ", " +
                         formatterGPS.format(cursor.getDouble(4)) + "; " +
                         formatterDB.format(cursor.getDouble(5)) + " dB");
@@ -183,15 +193,14 @@ public class DataModel extends SQLiteOpenHelper {
                 ATR_TS + "), COUNT(" + ATR_ID + ") FROM " + TBL_NAME_POINTS + " GROUP BY " + ATR_SESSION, null);
         ArrayList<String> dataArrayList = new ArrayList<>();
 
-        DecimalFormat formatterDB = new DecimalFormat("#0.00");
-        String pattern = "dd.MM.yyyy hh:mm:ss";
+        String pattern = "dd.MM.yyyy HH:mm:ss";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
         if (cursor.moveToFirst()) {
             do {
                 String dateEnd = simpleDateFormat.format(new Date(cursor.getLong(1)));
                 String dateStart = simpleDateFormat.format(new Date(cursor.getLong(2)));
-                dataArrayList.add(cursor.getInt(0) + ") " + dateStart.toString() + " – "
-                        + dateEnd.toString() + ", Měření: " + cursor.getInt(3));
+                dataArrayList.add(cursor.getInt(0) + ") " + dateStart + " – " + dateEnd +
+                        context.getResources().getString(R.string.measurement_data_window) + " " + cursor.getInt(3));
             } while (cursor.moveToNext());
         }
 

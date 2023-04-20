@@ -47,6 +47,7 @@
     <string name="delete_data_message">Opravdu chcete smazat záznam {0}?</string>
     <string name="click_on_active_measuring">Nelze otevřít právě probíhající měření.</string>
     <string name="microphone_not_allowed">Není povoleno nahrávání zvuku.</string>
+    <string name="measurement_data_window">, Měření:</string>
     <string-array name="sidewalk_array">
         <item>Bez chodníku</item>
         <item>Chodník na jedné straně</item>

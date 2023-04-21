@@ -402,7 +402,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             spinnerSidewalk.setSelection(streetDataClicked.sidewalk);
             spinnerSidewalkWidth.setSelection(streetDataClicked.sidewalk_width);
             spinnerGreen.setSelection(streetDataClicked.green);
-            spinnerSidewalkWidth.setSelection(streetDataClicked.sidewalk_width);
+            spinnerComfort.setSelection(streetDataClicked.sidewalk_width);
         }
 
         // create the popup window

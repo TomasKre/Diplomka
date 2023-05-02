@@ -1,6 +1,7 @@
 package com.example.diplomka;
 
 import android.os.AsyncTask;
+import android.os.Build;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -32,10 +33,12 @@ public class HTTP extends AsyncTask<String, Void, String> {
     protected String doInBackground(String... strings) {
         String json = strings[0];
         try {
+            String nodeKey = BuildConfig.NODE_KEY;
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setRequestProperty("Accept", "application/json");
+            conn.setRequestProperty("API-Key", nodeKey);
             conn.setDoOutput(true);
             conn.setDoInput(true);
             conn.setConnectTimeout(15000);

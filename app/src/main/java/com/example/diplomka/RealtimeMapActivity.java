@@ -65,7 +65,6 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
     private LocationListener locationListener;
     private int session;
     private List<DataPoint> dataPoints;
-    private List<StreetData> streetData;
     private List<Polyline> polylineList;
     private List<DataPoint> markers;
     private PolylineOptions polylineOptions;
@@ -83,6 +82,7 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
     private float minDistanceM = 5;
     private int sidewalk = 0;
     private int sidewalk_width = 0;
+    private int last_sidewalk_width = -1;
     private int green = 0;
     private int comfort = 0;
     private boolean streetDataChanged = false;
@@ -416,6 +416,17 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 streetDataChanged = true;
                 sidewalk = spinnerSidewalk.getSelectedItemPosition();
+                Spinner spinnerSidewalkWidth = (Spinner) autofillView.findViewById(R.id.sidewalk_width_spinner);
+                if (sidewalk == 0) {
+                    last_sidewalk_width = sidewalk_width;
+                    sidewalk_width = 0;
+                    spinnerSidewalkWidth.setSelection(sidewalk_width);
+                    spinnerSidewalkWidth.setEnabled(false);
+                } else if (last_sidewalk_width != -1) {
+                    spinnerSidewalkWidth.setEnabled(true);
+                    spinnerSidewalkWidth.setSelection(last_sidewalk_width);
+                    last_sidewalk_width = -1;
+                }
             }
             @Override
             public void onNothingSelected(AdapterView<?> parent) { }
@@ -432,6 +443,10 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 streetDataChanged = true;
                 sidewalk_width = spinnerSidewalkWidth.getSelectedItemPosition();
+                if (sidewalk_width == 0) {
+                    Spinner spinnerSidewalk = (Spinner) autofillView.findViewById(R.id.sidewalk_spinner);
+                    spinnerSidewalk.setSelection(0);
+                }
             }
             @Override
             public void onNothingSelected(AdapterView<?> parent) { }
@@ -663,6 +678,7 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
         locationManager.removeUpdates(locationListener);
         super.onDestroy();
     }
+
     private void getPreferences() {
         SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("session_prefs", 0);
         sidewalk = sharedPreferences.getInt("sidewalk", 0);

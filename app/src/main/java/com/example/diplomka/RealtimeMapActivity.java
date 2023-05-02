@@ -6,6 +6,7 @@ import static com.example.diplomka.Tools.getHumanDate;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.location.LocationListener;
@@ -108,6 +109,8 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        // Načti uložená data k autovyplňování
+        getPreferences();
 
         //getExtra
         if (savedInstanceState == null) {
@@ -656,7 +659,25 @@ public class RealtimeMapActivity extends FragmentActivity implements OnMapReadyC
 
     @Override
     protected void onDestroy() {
+        savePreferences();
         locationManager.removeUpdates(locationListener);
         super.onDestroy();
+    }
+    private void getPreferences() {
+        SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("session_prefs", 0);
+        sidewalk = sharedPreferences.getInt("sidewalk", 0);
+        sidewalk_width = sharedPreferences.getInt("sidewalk_width", 0);
+        green = sharedPreferences.getInt("green", 0);
+        comfort = sharedPreferences.getInt("comfort", 0);
+    }
+
+    private void savePreferences() {
+        SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("session_prefs", 0);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt("sidewalk", sidewalk);
+        editor.putInt("sidewalk_width", sidewalk_width);
+        editor.putInt("green", green);
+        editor.putInt("comfort", comfort);
+        editor.apply();
     }
 }
